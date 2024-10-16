@@ -55,10 +55,5 @@ Make sure you have the following installed on your machine:
    git clone https://github.com/your-username/hire-wire.git
 2. Navigate to the project directory 
     cd hire-wire
-3. Install dependencies for the frontend and backend
-  For the Frontend:
-    cd client
-    npm install
-  For the Backend:
-    cd server
+3. Install dependencies
     npm install
