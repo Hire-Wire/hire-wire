@@ -49,11 +49,17 @@ Make sure you have the following installed on your machine:
 - **MySQL** (local or hosted)
 - **Git** (for version control)
 
-### Steps:
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/hire-wire.git
-2. Navigate to the project directory 
-    cd hire-wire
-3. Install dependencies
-    npm install
+**How can this be tested?**
+
+   1. Clone this repository:
+     ```bash```
+     git clone https://github.com/your-username/hire-wire.git
+  2. Navigate to the project directory 
+      ```cd hire-wire```
+  3. Install dependencies
+      ```npm install```
+  4. run ```npm start```
+  5. Go to your web browser and enter ```http://localhost:8000/```
+
+**Highlight how this PR can be tested**
+-  run ```npm test```
