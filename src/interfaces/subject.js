@@ -1,7 +1,7 @@
 // Subject interface
-class Subject {
-    addObserver(observer) {
-        throw new Error("Method 'addObserver()' must be implemented.");
+class SubjectInterface {
+    registerObserver(observer) {
+        throw new Error("Method 'registerObserver()' must be implemented.");
     }
 
     removeObserver(observer) {
@@ -12,3 +12,5 @@ class Subject {
         throw new Error("Method 'notifyObservers()' must be implemented.");
     }
 }
+
+export default SubjectInterface;
