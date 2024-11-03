@@ -1,9 +1,10 @@
 // config/config.js
-require('dotenv').config(); // Load environment variables from .env
+import dotenv from 'dotenv'; // Load environment variables from .env
+dotenv.config();
 
-module.exports = {
+const config = {
   development: {
-    username: process.env.MYSQLUSERNAME,     // Use environment variables
+    username: process.env.MYSQLUSERNAME, // Use environment variables
     password: process.env.MYSQLPASSWORD,
     database: process.env.MYSQLDATABASE,
     host: process.env.MYSQLHOST,
@@ -24,3 +25,5 @@ module.exports = {
     dialect: process.env.DB_DIALECT,
   },
 };
+
+export default config;

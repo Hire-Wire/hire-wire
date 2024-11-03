@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '../server.js';
+import app from '../server';
 
 describe('GET /', () => {
   it('should respond with Hello from our server!', async () => {

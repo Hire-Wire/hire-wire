@@ -1,23 +1,51 @@
-import express from 'express';
+import 'colors'; // Optional for colored logs
+import express, { json, urlencoded } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import routes from './src/routes/index.js';
+import passport from 'passport';
+import passportConfig from './src/config/passport.js';
+import routes from './src/routes/index.js'; // Adjust route import if needed
 
-// configure dotenv
+// Configure dotenv
 dotenv.config();
 
+// Set up the express app
 const app = express();
+const port = process.env.PORT || 8000;
 
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Middleware Setup
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || 'http://localhost:8000',
+  credentials: true,
+}));
 
-routes(app);
+// Initialize passport
+passportConfig(passport);
+app.use(passport.initialize());
 
-// Start the server only if not in test mode
+// Parse incoming requests data
+app.use(json());
+app.use(urlencoded({ extended: false }));
+
+// Routes
+routes(app); // Assuming routes is a function that takes `app` as an argument
+
+// Global Error Handling Middleware (Optional)
+app.use((err, req, res, next) => {
+  console.error(err.stack.red);
+  res.status(500).json({ message: 'Something went wrong!' });
+});
+
+// 404 Handling Middleware
+app.use((req, res, next) => {
+  res.status(404).json({ message: 'Route not found' });
+});
+
+// Start the server
 if (process.env.NODE_ENV !== 'test') {
-  const PORT = process.env.PORT || 8000;
-  app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
+  app.listen(port, () => {
+    console.log(`Server running on port ${port}`.green);
+  });
 }
 
 export default app;

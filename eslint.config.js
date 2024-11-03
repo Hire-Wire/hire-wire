@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 // eslint.config.js
 
 import globals from 'globals';
@@ -9,10 +10,10 @@ export default [
   // Set the language options, including Node.js globals
   {
     languageOptions: {
-      ecmaVersion: 'latest',   // Use the latest ECMAScript version
-      sourceType: 'module',    // Use ES modules
+      ecmaVersion: 'latest', // Use the latest ECMAScript version
+      sourceType: 'module', // Use ES modules
       globals: {
-        ...globals.node,       // Include Node.js globals
+        ...globals.node, // Include Node.js globals
       },
     },
     // Include plugins as objects
@@ -40,12 +41,12 @@ export default [
       'block-scoped-var': 'error',
       'class-methods-use-this': 'error',
       'consistent-return': 'error',
-      'curly': ['error', 'all'],
+      curly: ['error', 'all'],
       'default-case': 'error',
       'default-param-last': 'error',
       'dot-location': ['error', 'property'],
       'dot-notation': ['error', { allowKeywords: true }],
-      'eqeqeq': ['error', 'always', { null: 'ignore' }],
+      eqeqeq: ['error', 'always', { null: 'ignore' }],
       'grouped-accessor-pairs': 'error',
       'no-alert': 'warn',
       'no-caller': 'error',
@@ -89,10 +90,10 @@ export default [
       'prefer-promise-reject-errors': ['error', { allowEmptyReject: true }],
       'require-await': 'error',
       'wrap-iife': ['error', 'outside', { functionPrototypeMethods: false }],
-      'yoda': ['error', 'never'],
+      yoda: ['error', 'never'],
 
       // Strict Mode
-      'strict': ['error', 'never'],
+      strict: ['error', 'never'],
 
       // Variables
       'no-delete-var': 'error',
@@ -100,7 +101,7 @@ export default [
       'no-shadow-restricted-names': 'error',
       'no-undef-init': 'error',
       'no-undefined': 'off',
-      'no-use-before-define': ['error', { functions: false, classes: true, variables: true }],
+      // 'no-use-before-define': ['error', { functions: false, classes: true, variables: true }],
 
       // Stylistic Issues
       'array-bracket-newline': ['error', 'consistent'],
@@ -108,7 +109,7 @@ export default [
       'array-element-newline': ['error', 'consistent'],
       'block-spacing': ['error', 'always'],
       'brace-style': ['error', '1tbs', { allowSingleLine: true }],
-      'camelcase': ['error', { properties: 'never', ignoreDestructuring: false }],
+      camelcase: ['error', { properties: 'never', ignoreDestructuring: false }],
       'comma-dangle': ['error', {
         arrays: 'always-multiline',
         objects: 'always-multiline',
@@ -122,7 +123,7 @@ export default [
       'eol-last': ['error', 'always'],
       'func-call-spacing': ['error', 'never'],
       'function-paren-newline': ['error', 'consistent'],
-      'indent': ['error', 2, { SwitchCase: 1 }],
+      indent: ['error', 2, { SwitchCase: 1 }],
       'key-spacing': ['error', { beforeColon: false, afterColon: true }],
       'keyword-spacing': ['error', { before: true, after: true }],
       'linebreak-style': ['error', 'unix'],
@@ -164,8 +165,8 @@ export default [
       'padded-blocks': ['error', 'never'],
       'prefer-object-spread': 'error',
       'quote-props': ['error', 'as-needed', { keywords: false, unnecessary: true, numbers: false }],
-      'quotes': ['error', 'single', { avoidEscape: true, allowTemplateLiterals: false }],
-      'semi': ['error', 'always'],
+      quotes: ['error', 'single', { avoidEscape: true, allowTemplateLiterals: false }],
+      semi: ['error', 'always'],
       'semi-spacing': ['error', { before: false, after: true }],
       'semi-style': ['error', 'last'],
       'space-before-blocks': ['error', 'always'],
