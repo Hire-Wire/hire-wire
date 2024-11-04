@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+// eslint-disable-next-line import/no-extraneous-dependencies
 import 'colors'; // Optional for colored logs
 import express, { json, urlencoded } from 'express';
 import cors from 'cors';

@@ -22,7 +22,8 @@ const passportConfig = (passport) => {
         if (user) {
           return done(null, user); // If user found, pass it to request
         }
-        return done(null, false); // If no user, authentication fails
+        // If no user, authentication fails
+        return done(null, false);
       } catch (error) {
         return done(error, false); // If error, fail the request
       }
