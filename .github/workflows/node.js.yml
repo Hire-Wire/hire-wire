@@ -19,6 +19,31 @@ jobs:
         node-version: [18.x, 20.x, 22.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: root_password
+          MYSQL_USER: test_user
+          MYSQL_PASSWORD: test_password
+          MYSQL_DATABASE: test_db
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u test_user --password=test_password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    env:
+      NODE_ENV: test
+      DB_HOST_TEST: 127.0.0.1
+      DB_USER_TEST: test_user
+      DB_PASSWORD_TEST: test_password
+      DB_NAME_TEST: test_db
+      DB_DIALECT: mysql
+      JWT_SECRET: your_jwt_secret
+
     steps:
     - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}

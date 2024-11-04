@@ -1,10 +1,7 @@
-import logger from '../../logger.js';
+import user from './user.js';
 
 const aggregateRoutes = (app) => {
-  app.get('/', (req, res) =>{
-    logger.info('Accessing the home route');
-    res.send('Hello from our server');
-  });
+  user(app);
 };
 
 export default aggregateRoutes;
