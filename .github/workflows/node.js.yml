@@ -37,10 +37,10 @@ jobs:
 
     env:
       NODE_ENV: test
-      DB_HOST: 127.0.0.1
-      DB_USERNAME: test_user
-      DB_PASSWORD: test_password
-      DB_DATABASE: test_db
+      DB_HOST_TEST: 127.0.0.1
+      DB_USER_TEST: test_user
+      DB_PASSWORD_TEST: test_password
+      DB_NAME_TEST: test_db
       DB_DIALECT: mysql
       JWT_SECRET: your_jwt_secret
 
