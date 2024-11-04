@@ -45,7 +45,7 @@
 
 ### Prerequisites:
 Make sure you have the following installed on your machine:
-- **Node.js** (v14 or higher)
+- **Node.js** (v21 or higher)
 - **MySQL** (local or hosted)
 - **Git** (for version control)
 

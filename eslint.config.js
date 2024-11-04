@@ -238,9 +238,9 @@ export default [
 
       // Import plugin rules (use the plugin's rule namespace)
       'import/extensions': ['error', 'ignorePackages', {
-        js: 'never',
-        mjs: 'never',
-        jsx: 'never',
+        js: 'always',
+        mjs: 'always',
+        jsx: 'always',
       }],
       'import/no-extraneous-dependencies': ['error', {
         devDependencies: [
