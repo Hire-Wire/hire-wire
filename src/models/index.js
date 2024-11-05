@@ -1,16 +1,20 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { Sequelize } from 'sequelize';
 import configFile from '../config/config.js';
 
-const basename = path.basename(fileURLToPath(import.meta.url));
+console.log(import.meta.url);
+
+// Define the current directory and file paths
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || 'development';
 const config = configFile[env];
 const db = {};
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
+// Initialize Sequelize instance
 let sequelize;
 if (config.use_env_variable) {
   sequelize = new Sequelize(process.env[config.use_env_variable], config);
@@ -18,16 +22,19 @@ if (config.use_env_variable) {
   sequelize = new Sequelize(config.database, config.username, config.password, config);
 }
 
+// Function to initialize models
 const initializeModels = async () => {
   const files = fs.readdirSync(__dirname).filter(file => (
-    file.indexOf('.') !== 0
-    && file !== basename
-    && file.slice(-3) === '.js'
-    && file.indexOf('.test.js') === -1
+      file.indexOf('.') !== 0 &&
+      file !== basename &&
+      file.slice(-3) === '.js' &&
+      file.indexOf('.test.js') === -1
   ));
 
   for (const file of files) {
-    const modelModule = await import(path.join(__dirname, file));
+    // Use `pathToFileURL` to handle file path as a `file://` URL
+    const modelPath = pathToFileURL(path.join(__dirname, file)).href;
+    const modelModule = await import(modelPath);
     const model = modelModule.default(sequelize, Sequelize.DataTypes);
     db[model.name] = model;
   }
@@ -39,10 +46,17 @@ const initializeModels = async () => {
   });
 };
 
-// Initialize models asynchronously
-await initializeModels();
+// Initialize models asynchronously inside an IIFE to avoid top-level await
+(async () => {
+  await initializeModels();
+})();
 
-db.sequelize = sequelize;
-db.Sequelize = Sequelize;
+const initializeDatabase = async () => {
+  await initializeModels();
+  db.sequelize = sequelize;
+  db.Sequelize = Sequelize;
+};
+
+await initializeDatabase();
 
 export default db;

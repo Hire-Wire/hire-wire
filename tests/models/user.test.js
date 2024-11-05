@@ -4,7 +4,14 @@ import db from '../../src/models/index.js';
 
 describe('User Model', () => {
   beforeAll(async () => {
-    await db.sequelize.sync({ force: true });
+    try {
+      await db.sequelize.authenticate();
+      console.log('Database connection established.');
+      await db.sequelize.sync({ force: true });
+      console.log('Database synced successfully.');
+    } catch (error) {
+      console.error('Error during sync:', error);
+    }
   });
 
   afterAll(async () => {
@@ -25,12 +32,12 @@ describe('User Model', () => {
 
   test('should not create a user with invalid email', async () => {
     await expect(
-      db.User.create({
-        email: 'invalid-email',
-        password: 'password123',
-        firstName: 'John',
-        lastName: 'Doe',
-      })
+        db.User.create({
+          email: 'invalid-email',
+          password: 'password123',
+          firstName: 'John',
+          lastName: 'Doe',
+        })
     ).rejects.toThrow();
   });
 
