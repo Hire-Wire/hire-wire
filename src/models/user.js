@@ -61,5 +61,10 @@ export default (sequelize) => {
     return rest;
   };
 
+  // User.associate = (models) => {
+  //   User.hasMany(models.Experience, { foreignKey: 'UserID', as: 'Experience'});
+
+  // };
+
   return User;
 };
