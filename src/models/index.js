@@ -4,8 +4,6 @@ import { fileURLToPath, pathToFileURL } from 'url';
 import { Sequelize } from 'sequelize';
 import configFile from '../config/config.js';
 
-console.log(import.meta.url);
-
 // Define the current directory and file paths
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
