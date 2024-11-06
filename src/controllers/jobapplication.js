@@ -2,9 +2,68 @@
 import { validationResult } from 'express-validator';
 import { getUserDetails } from '../controllers/userController';
 import { getUserExperiences } from '../controllers/experienceController';
+import db from '../models/index.js';
 import logger from '../../logger';
 
-class JobAppController {
+const { JobApplication, JobDescription, Document } = db;
+
+// TODO: write jobAppController.createJobApplication()
+// TODO: write jobAppController.deleteJobApplication()
+
+class JobApplicationController {
+  createJobApplication = async (req, res) => {
+    const userId = req.user.id;
+    try {
+      let jobApplications = req.body;
+
+      // Map over job applications and create each one, with optional JobDescription and Document data
+      const createdJobApplications = await Promise.all(
+        jobApplications.map(async (jobApp) => {
+          // Create JobApplication with the associated userId
+          const newJobApplication = await JobApplication.create({
+            ...jobApp,
+            userId,
+          });
+
+          // If JobDescription data exists, create and associate it
+          if (jobApp.jobDescription) {
+            const newJobDescription = await JobDescription.create({
+              ...jobApp.jobDescription,
+              jobApplicationID: newJobApplication.jobApplicationID,
+            });
+            newJobApplication.JobDescription = newJobDescription;
+          }
+
+          // If Documents are provided, create and associate each one
+          if (Array.isArray(jobApp.documents)) {
+            const newDocuments = await Promise.all(
+              jobApp.documents.map(doc =>
+                Document.create({
+                  ...doc,
+                  jobApplicationID: newJobApplication.jobApplicationID,
+                }))
+            );
+            newJobApplication.Documents = newDocuments;
+          }
+
+          return newJobApplication;
+        })
+      );
+
+      return res.status(201).json({
+        success: true,
+        message: 'Job applications created successfully',
+        jobApplications: createdJobApplications,
+      });
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: 'Failed to create job applications',
+        error: error.message,
+      });
+    }
+  };
+
   /**
    * Fetches both user details and user experiences in parallel.
    * @param {string} userId - The ID of the user whose data is being fetched.
@@ -98,7 +157,7 @@ class JobAppController {
    * @returns {Promise<void>}
    */
   async triggerContentGeneration(req, res) {
-    logger.info('JobAppController.triggerContentGeneration called.');
+    logger.info('Jobapplication.triggerContentGeneration called.');
 
     // Validation check
     const errors = validationResult(req);
@@ -127,4 +186,4 @@ class JobAppController {
   }
 }
 
-export default new JobAppController();
+export default new JobApplicationController();
