@@ -3,11 +3,11 @@
 import passport from 'passport';
 import controllers from '../controllers/index.js';
 
-const experienceController = controllers.experience;
+const experienceController = controllers.Experience;
 const auth = passport.authenticate('jwt', { 
   session: false });
 
-export default app
+export default (app) =>
 {
   app.post('/api/v1/experiences', auth, experienceController.createExperience);
   app.get('/api/v1/experiences', auth, experienceController.getUserExperiences);

@@ -5,23 +5,36 @@ import db from '../models/index.js';
 const { Experience, Employment, Education } = db;
 
 class ExperienceController {
-    createExperience = async (req, res) => {
-        const userId = req.user.id;
-        try {
-          const experiences = await Promise.all(req.body.map(exp =>
-            Experience.create({ ...exp, UserID: userId })));
-          return res.status(201).json({
-            success: true, 
-            message: 'Experiences created successfully',
-            experiences});
-        } catch (error) {
-          return res.status(400).json({ 
-            success: false,
-            message: 'Failed to created experiences',
-            error: error.message });
+  createExperience = async (req, res) => {
+    const userId = req.user.id;
+    try {
+        let experiences = req.body;
+
+        // If the request body is not an array (i.e., single experience object), wrap it in an array
+        if (!Array.isArray(experiences)) {
+            experiences = [experiences];
         }
-      };
-      
+
+        // Map over the array of experiences and create each one
+        const createdExperiences = await Promise.all(
+            experiences.map(exp =>
+                Experience.create({ ...exp, UserID: userId })
+            )
+        );
+
+        return res.status(201).json({
+            success: true,
+            message: 'Experiences created successfully',
+            experiences: createdExperiences
+        });
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: 'Failed to create experiences',
+            error: error.message
+        });
+    }
+};
       getUserExperiences = async (req, res) => {
         const userId = req.user.id;
       

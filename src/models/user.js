@@ -1,6 +1,7 @@
 import { hashSync, genSaltSync, compareSync } from 'bcrypt';
 import { DataTypes } from 'sequelize';
 
+
 const saltRounds = 10;
 const salt = genSaltSync(saltRounds);
 
@@ -61,10 +62,10 @@ export default (sequelize) => {
     return rest;
   };
 
-  // User.associate = (models) => {
-  //   User.hasMany(models.Experience, { foreignKey: 'UserID', as: 'Experience'});
-
-  // };
+  User.hasMany(sequelize.models.Experience, {
+    foreignKey: 'userId'
+  });
 
   return User;
 };
+

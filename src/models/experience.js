@@ -10,7 +10,7 @@ export default (sequelize) => {
       primaryKey: true,
       allowNull: false,
     },
-    UserID: {
+    userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
@@ -85,18 +85,16 @@ export default (sequelize) => {
     },
   });
 
+Experience.associate = (models) => {
+  Experience.belongsTo(models.User, {
+    foreignKey: 'userId', 
+    as: 'User', 
+  }); 
+
   Experience.hasMany(Employment, { foreignKey: 'ExperienceID' });
   Experience.hasMany(Education, { foreignKey: 'ExperienceID' });
-
-  Employment.belongsTo(Experience, { foreignKey: 'ExperienceID'});
-  Education.belongsTo(Experience, { foreignKey: 'ExperienceID'});
-
-  Experience.associate = (models) => {
-  Experience.belongsTo(models.User, {
-    foreignKey: 'UserID', 
-    as: 'User', 
-  });
 };
+
 
   return {
     Experience,
