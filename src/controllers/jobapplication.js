@@ -1,189 +1,241 @@
 /* eslint-disable class-methods-use-this */
-import { validationResult } from 'express-validator';
-import { getUserDetails } from '../controllers/userController';
-import { getUserExperiences } from '../controllers/experienceController';
 import db from '../models/index.js';
-import logger from '../../logger';
 
 const { JobApplication, JobDescription, Document } = db;
 
-// TODO: write jobAppController.createJobApplication()
-// TODO: write jobAppController.deleteJobApplication()
-
 class JobApplicationController {
+  /**
+   * Creates a new job application and associates a job description with it.
+   * @param {object} req - The request object, containing job application and job description data.
+   * @param {object} res - The response object used to send back the status and result.
+   * @returns {Promise<void>} - Returns a JSON response indicating success or failure.
+   */
   createJobApplication = async (req, res) => {
+    // Extract user ID from the authenticated request object
     const userId = req.user.id;
-    try {
-      let jobApplications = req.body;
 
-      // Map over job applications and create each one, with optional JobDescription and Document data
-      const createdJobApplications = await Promise.all(
-        jobApplications.map(async (jobApp) => {
-          // Create JobApplication with the associated userId
-          const newJobApplication = await JobApplication.create({
-            ...jobApp,
-            userId,
-          });
+    // Destructure required fields for job description from the request body
+    const { jobAppTitle, jobAppCompany, jobAppDescription, ...jobAppData } = req.body;
 
-          // If JobDescription data exists, create and associate it
-          if (jobApp.jobDescription) {
-            const newJobDescription = await JobDescription.create({
-              ...jobApp.jobDescription,
-              jobApplicationID: newJobApplication.jobApplicationID,
-            });
-            newJobApplication.JobDescription = newJobDescription;
-          }
-
-          // If Documents are provided, create and associate each one
-          if (Array.isArray(jobApp.documents)) {
-            const newDocuments = await Promise.all(
-              jobApp.documents.map(doc =>
-                Document.create({
-                  ...doc,
-                  jobApplicationID: newJobApplication.jobApplicationID,
-                }))
-            );
-            newJobApplication.Documents = newDocuments;
-          }
-
-          return newJobApplication;
-        })
-      );
-
-      return res.status(201).json({
-        success: true,
-        message: 'Job applications created successfully',
-        jobApplications: createdJobApplications,
-      });
-    } catch (error) {
+    // Validate that all required job description data is provided
+    if (!jobAppTitle || !jobAppCompany || !jobAppDescription) {
       return res.status(400).json({
         success: false,
-        message: 'Failed to create job applications',
+        message: 'Incomplete job description data provided',
+      });
+    }
+
+    try {
+      // Create the JobApplication instance with user-provided data and associate it with userId
+      const createdJobApplication = await JobApplication.create({
+        ...jobAppData,
+        userId,
+      });
+
+      // Create the JobDescription and associate it with the created JobApplication's ID
+      createdJobApplication.JobDescription = await JobDescription.create({
+        jobTitle: jobAppTitle,
+        jobCompany: jobAppCompany,
+        jobDescription: jobAppDescription,
+        jobApplicationID: createdJobApplication.jobApplicationID, // Associate with foreign key
+      });
+
+      // Send a success response with the created job application and description
+      return res.status(201).json({
+        success: true,
+        message: 'Job application and description created successfully',
+        jobApplication: createdJobApplication,
+      });
+    } catch (error) {
+      // Handle errors by returning a 400 status with the error message
+      return res.status(400).json({
+        success: false,
+        message: 'Failed to create job application',
         error: error.message,
       });
     }
   };
 
   /**
-   * Fetches both user details and user experiences in parallel.
-   * @param {string} userId - The ID of the user whose data is being fetched.
-   * @returns {Promise<Array>} - An array containing user details and user experiences.
+   * Adds a document to an existing job application.
+   * @param {object} req - The request object, containing document data.
+   * @param {object} res - The response object used to send back the status and result.
+   * @returns {Promise<void>} - Returns a JSON response indicating success or failure.
    */
-  fetchUserAndExperienceDetails(userId) {
-    return Promise.all([
-      getUserDetails(userId),
-      getUserExperiences(userId),
-    ]);
-  }
+  addDocument = async (req, res) => {
+    // Extract required fields for the document from the request body
+    const { jobApplicationID, docType, docBody } = req.body;
 
-  /**
-   * Structures data into the required JSON format for the LLM request.
-   * @param {Object} userDetails - Basic user information (ID, name, email, phone).
-   * @param {Array} userExperiences - List of user's employment experiences.
-   * @param {Array} userEducation - List of user's education records.
-   * @param {String} jobDescription - Job description provided for the LLM context.
-   * @param {String} customizationPrompt - Customization prompt provided for LLM context
-   * @param {Object} settings - Customization settings for the LLM request.
-   * @returns {Object} - Structured JSON object containing user data for LLM input.
-   */
-  structureLLMRequest(userDetails, userExperiences, userEducation, jobDescription, customizationPrompt, settings = {}) {
-    return {
-      user: {
-        userID: userDetails.id,
-        firstName: userDetails.firstName,
-        lastName: userDetails.lastName,
-        email: userDetails.email,
-        phone: userDetails.phone,
-      },
-      workExperiences: userExperiences.map(exp => ({
-        workExperienceID: exp.ExperienceID,
-        companyName: exp.OrganizationName,
-        jobTitle: exp.Employment[0]?.JobTitle,
-        startDate: exp.StartDate,
-        endDate: exp.EndDate,
-        description: exp.Employment[0]?.JobDescription,
-      })),
-      educations: userEducation.map(edu => ({
-        educationID: edu.ExperienceID,
-        institutionName: edu.OrganizationName,
-        degree: edu.Education[0]?.Degree,
-        startYear: new Date(edu.StartDate).getFullYear(),
-        endYear: edu.EndDate ? new Date(edu.EndDate).getFullYear() : null,
-      })),
-      jobDescription: { jobDescription },
-      settings: {
-        includeGPA: settings.includeGPA ?? true,
-        resumePageLength: settings.resumePageLength ?? 2,
-        includeCoverLetter: settings.includeCoverLetter ?? true,
-        includePersonalSummary: settings.includePersonalSummary ?? true,
-        generateSkills: settings.generateSkills ?? true,
-        highlightSkillsSection: settings.highlightSkillsSection ?? true,
-      },
-      customizationPrompt: { customizationPrompt },
-      devSettings: {
-        rawText: true,
-      },
-    };
-  }
-
-  /**
-   * Prepares a structured JSON object for the LLM request.
-   * @param {Object} req - Request containing userId, jobPostingDetails, and optional settings.
-   * @returns {Promise<Object>} - structure JSON to provide to LLM
-   */
-  async prepareLLMJSON(req) {
-    const { userId } = req.params;
-    const { jobPostingDetails, customizationPrompt, settings = {} } = req.body;
-
-    const [
-      userDetails,
-      userExperiences,
-    ] = await this.fetchUserAndExperienceDetails(userId);
-
-    return this.structureLLMRequest(
-      userDetails,
-      userExperiences.filter(exp => exp.ExperienceType === 'Employment'),
-      userExperiences.filter(exp => exp.ExperienceType === 'Education'),
-      jobPostingDetails,
-      customizationPrompt,
-      settings
-    );
-  }
-
-  /**
-   * Generates content for a user based on job posting details and user profile.
-   * @param {Object} req - The request object containing user details and job application
-   * @param {Object} res - The response object for sending the result.
-   * @returns {Promise<void>}
-   */
-  async triggerContentGeneration(req, res) {
-    logger.info('Jobapplication.triggerContentGeneration called.');
-
-    // Validation check
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+    // Validate that required fields are provided
+    if (!jobApplicationID || !docType || !docBody) {
+      return res.status(400).json({
+        success: false,
+        message: 'Incomplete document data provided',
+      });
     }
 
-    const { jobPostingDetails } = req.body;
-
-    if (!jobPostingDetails) {
-      return res.status(400).json({ error: 'Job details must not be empty' });
+    // docType must be only 'Resume' or 'Cover Letter'
+    const validDocTypes = ['Resume', 'Cover Letter'];
+    if (!validDocTypes.includes(docType)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid document type. Allowed types are "Resume" or "Cover Letter".',
+      });
     }
 
     try {
-      // Fetch and prepare data for the LLM
-      const llmReqJSON = await this.prepareLLMJSON(req);
+      // Find the JobApplication by its ID to ensure it exists
+      const jobApplication = await JobApplication.findByPk(jobApplicationID);
 
-      // Send data to LLM and receive generated content
-      const generatedContent = await this.sendToLLM(llmReqJSON);
+      // If no job application is found, return a 404 error
+      if (!jobApplication) {
+        return res.status(404).json({
+          success: false,
+          message: 'Job application not found',
+        });
+      }
 
-      return res.status(201).json(generatedContent);
+      // Create the Document associated with the provided jobApplicationID
+      const newDocument = await Document.create({
+        docType,
+        docBody,
+        jobApplicationID, // Associate with the JobApplication's ID
+      });
+
+      // Send a success response with the created document
+      return res.status(201).json({
+        success: true,
+        message: 'Document added successfully',
+        document: newDocument,
+      });
     } catch (error) {
-      logger.error(`Error generating content: ${error.message}`);
-      return res.status(500).json({ error: error.message });
+      // Handle errors by returning a 500 status with the error message
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to add document',
+        error: error.message,
+      });
     }
-  }
+  };
+
+  /**
+   * Retrieves a specific job application by ID.
+   * Includes JobDescription and attached documents
+   * @param {object} req - The request object, with jobApplicationID in the URL parameters.
+   * @param {object} res - The response object used to send back the status and result.
+   * @returns {Promise<void>} - JSON response contains entire JobApplication data
+   */
+  getJobApplication = async (req, res) => {
+    // Extract jobApplicationID from the request parameters
+    const { jobApplicationID } = req.params;
+
+    try {
+      // Find the JobApplication by its jobApplicationID
+      const jobApplication = await JobApplication.findOne({
+        where: { jobApplicationID },
+        include: [
+          {
+            model: JobDescription,
+            as: 'JobDescription',
+          },
+          {
+            model: Document,
+            as: 'Documents',
+          },
+        ],
+      });
+
+      if (!jobApplication) {
+        return res.status(404).json({
+          success: false,
+          message: 'Job application not found',
+        });
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'Retrieved job application successfully',
+        jobApplication,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to retrieve job application',
+        error: error.message,
+      });
+    }
+  };
+
+  /**
+   * Retrieves a document by its ID.
+   * @param {object} req - The request object, containing document ID in params.
+   * @param {object} res - The response object used to send back the status and result.
+   * @returns {Promise<void>} - Returns a JSON response with the document or an error message.
+   */
+  getDocumentByID = async (req, res) => {
+    const { documentID } = req.params;
+
+    try {
+      // Find the document by its primary key (docId)
+      const document = await Document.findByPk(documentID);
+
+      // Check if the document exists
+      if (!document) {
+        return res.status(404).json({
+          success: false,
+          message: 'Document not found',
+        });
+      }
+
+      // Return the document data if found
+      return res.status(200).json({
+        success: true,
+        message: 'Document retrieved successfully',
+        document,
+      });
+    } catch (error) {
+      // Handle errors by returning a 500 status with the error message
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to retrieve document',
+        error: error.message,
+      });
+    }
+  };
+
+  /**
+   * Deletes a job application and all its associated job description and documents.
+   * @param {object} req - The request object, containing jobApplicationID in the parameters.
+   * @param {object} res - The response object used to send back the status and result.
+   * @returns {Promise<void>} - Returns a JSON response indicating success or failure.
+   */
+  deleteJobApplication = async (req, res) => {
+    const { jobApplicationID } = req.params;
+
+    try {
+      const jobApplication = await JobApplication.findByPk(jobApplicationID);
+
+      if (!jobApplication) {
+        return res.status(404).json({
+          success: false,
+          message: 'Job application not found',
+        });
+      }
+
+      // Delete the JobApplication (CASCADE)
+      await jobApplication.destroy();
+
+      return res.status(200).json({
+        success: true,
+        message: 'Job application and all associated data deleted successfully',
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to delete job application',
+        error: error.message,
+      });
+    }
+  };
 }
 
 export default new JobApplicationController();

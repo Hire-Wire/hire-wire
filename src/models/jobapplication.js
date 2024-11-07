@@ -38,7 +38,7 @@ const JobDescription = sequelize.define('JobDescription', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  jobDescription: {
+  jobDescriptionBody: {
     type: DataTypes.TEXT,
     allowNull: true,
   },
