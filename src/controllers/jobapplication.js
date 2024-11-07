@@ -63,18 +63,16 @@ class JobApplicationController {
    * @returns {Promise<void>} - Returns a JSON response indicating success or failure.
    */
   addDocument = async (req, res) => {
-    // Extract required fields for the document from the request body
-    const { jobApplicationID, docType, docBody } = req.body;
+    const { jobApplicationID } = req.params;
+    const { docType, docBody } = req.body;
 
-    // Validate that required fields are provided
-    if (!jobApplicationID || !docType || !docBody) {
+    if (!docType || !docBody) {
       return res.status(400).json({
         success: false,
         message: 'Incomplete document data provided',
       });
     }
 
-    // docType must be only 'Resume' or 'Cover Letter'
     const validDocTypes = ['Resume', 'Cover Letter'];
     if (!validDocTypes.includes(docType)) {
       return res.status(400).json({
@@ -84,10 +82,8 @@ class JobApplicationController {
     }
 
     try {
-      // Find the JobApplication by its ID to ensure it exists
       const jobApplication = await JobApplication.findByPk(jobApplicationID);
 
-      // If no job application is found, return a 404 error
       if (!jobApplication) {
         return res.status(404).json({
           success: false,
@@ -95,21 +91,18 @@ class JobApplicationController {
         });
       }
 
-      // Create the Document associated with the provided jobApplicationID
       const newDocument = await Document.create({
         docType,
         docBody,
         jobApplicationID, // Associate with the JobApplication's ID
       });
 
-      // Send a success response with the created document
       return res.status(201).json({
         success: true,
         message: 'Document added successfully',
         document: newDocument,
       });
     } catch (error) {
-      // Handle errors by returning a 500 status with the error message
       return res.status(500).json({
         success: false,
         message: 'Failed to add document',

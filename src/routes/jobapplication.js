@@ -19,7 +19,7 @@ export default (app) => {
   );
 
   app.post(
-    '/api/v1/jobapplication/document',
+    '/api/v1/jobapplication/:jobApplicationID/documents',
     auth,
     jobApplicationController.addDocument
   );
