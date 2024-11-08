@@ -1,6 +1,7 @@
 import { hashSync, genSaltSync, compareSync } from 'bcrypt';
 import { DataTypes } from 'sequelize';
 
+
 const saltRounds = 10;
 const salt = genSaltSync(saltRounds);
 
@@ -68,3 +69,4 @@ export default (sequelize) => {
 
   return User;
 };
+
