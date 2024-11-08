@@ -1,106 +1,40 @@
-//src/models/experience.js 
-
+// src/models/Experience.js
 import { DataTypes } from 'sequelize';
 
 export default (sequelize) => {
   const Experience = sequelize.define('Experience', {
-    ExperienceID: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-      allowNull: false,
-    },
-    UserID: {
+    userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: 'Users',
         key: 'id',
       },
-      onDelete: 'CASCADE', //Automatically delete Experience if User is deleted
+      onDelete: 'CASCADE',
     },
-    ExperienceType: {
+    experienceType: {
       type: DataTypes.ENUM('Education', 'Employment'),
       allowNull: false,
     },
-    OrganizationName: {
+    organizationName: {
       type: DataTypes.STRING,
       allowNull: false,
-    },
-    StartDate: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    EndDate: {
-      type: DataTypes.DATE,
-      allowNull: true,
-      validate: {
-        isAfterOrEqualToStartDate(value) {
-            if (this.StartDate && value && value <= this.StartDate) {
-                throw new Error('End date must be after or equal to the start date');
-            }
-        },
-      },
+      unique: true,
     },
   }, {
-    tableName: 'Experiences', 
-    timestamps: true, // Automatically adds createdAt and updatedAt
+    tableName: 'Experiences',
+    timestamps: true,
   });
 
-  const Employment = sequelize.define('Employment', {
-    JobTitle: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    JobDescription: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    ExperienceID: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      references: {
-        model: Experience,
-        key: 'ExperienceID',
-      },
-    },
-  });
-
-  const Education = sequelize.define('Education', {
-    Degree: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    Grade: {
-      type: DataTypes.FLOAT,
-      allowNull: true,
-    },
-    ExperienceID: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      references: {
-        model: Experience,
-        key: 'ExperienceID',
-      },
-    },
-  });
-
-  Experience.hasMany(Employment, { foreignKey: 'ExperienceID' });
-  Experience.hasMany(Education, { foreignKey: 'ExperienceID' });
-
-  Employment.belongsTo(Experience, { foreignKey: 'ExperienceID'});
-  Education.belongsTo(Experience, { foreignKey: 'ExperienceID'});
-
+  // Association with User and other models will be set up in a centralized manner
   Experience.associate = (models) => {
-  Experience.belongsTo(models.User, {
-    foreignKey: 'UserID', 
-    as: 'User', 
-  });
-};
-
-  return {
-    Experience,
-    Employment,
-    Education,
+    Experience.belongsTo(models.User, {
+      foreignKey: 'userId',
+      as: 'User',
+    });
+    Experience.hasMany(models.Employment, { foreignKey: 'experienceId' });
+    Experience.hasMany(models.Education, { foreignKey: 'experienceId' });
   };
+
+  return Experience;
 };
