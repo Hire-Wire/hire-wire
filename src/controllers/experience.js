@@ -4,6 +4,7 @@ import { validationResult } from 'express-validator';
 import db from '../models/index.js';
 import CreateExperience from '../services/experience/createExperience.js';
 import UpdateExperience from '../services/experience/updateExperience.js';
+import DeleteExperience from '../services/experience/deleteExperience.js';
 
 const { Experience, Employment, Education, User } = db;
 
@@ -90,31 +91,34 @@ class ExperienceController {
 
   async remove(req, res) {
     const { experienceId } = req.params;
+    const userId = req.user.id;
+   
 
     try {
-      const user = await User.findByPk(this.userId);
+      const user = await User.findByPk(userId);
       if (!user) { throw new Error('User not found'); }
 
-      const deleted = await Experience.destroy({
-        where: { id: experienceId, userId: user.id },
-      });
+      const deleteService = new DeleteExperience(experienceId, user.id);
+      const result = await deleteService.call();
 
-      if (deleted) {
-        return res.status(204).send();
+
+      if (result.success) {
+        return res.status(204).send(); // Successfully deleted
       }
 
       return res.status(404).json({
-        success: false,
-        message: 'Experience not found',
+        success: false, 
+        message: 'Experience not found', 
       });
-    } catch (error) {
+    } 
+    catch (error) {
       return res.status(500).json({
-        success: false,
-        message: 'Failed to delete experience',
-        error: error.message,
+        success: false, 
+        message: 'Failed to delete experience', 
+        error: error.message, 
       });
+     }
     }
-  };
-}
+  }
 
 export default new ExperienceController();
