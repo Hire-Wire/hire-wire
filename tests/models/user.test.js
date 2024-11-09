@@ -32,12 +32,12 @@ describe('User Model', () => {
 
   test('should not create a user with invalid email', async () => {
     await expect(
-        db.User.create({
-          email: 'invalid-email',
-          password: 'password123',
-          firstName: 'John',
-          lastName: 'Doe',
-        })
+      db.User.create({
+        email: 'invalid-email',
+        password: 'password123',
+        firstName: 'John',
+        lastName: 'Doe',
+      })
     ).rejects.toThrow();
   });
 

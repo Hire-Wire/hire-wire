@@ -2,8 +2,8 @@
 // src/controllers/Experience.js
 import { validationResult } from 'express-validator';
 import db from '../models/index.js';
-import CreateExperience from '../services/experience/CreateExperience.js';
-import UpdateExperience from '../services/experience/UpdateExperience.js';
+import CreateExperience from '../services/experience/createExperience.js';
+import UpdateExperience from '../services/experience/updateExperience.js';
 
 const { Experience, Employment, Education, User } = db;
 
@@ -115,6 +115,6 @@ class ExperienceController {
       });
     }
   };
-};
+}
 
 export default new ExperienceController();
