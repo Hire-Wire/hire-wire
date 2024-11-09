@@ -30,7 +30,7 @@ module.exports = {
         allowNull: true,
       },
       jobStatus: {
-        type: Sequelize.ENUM('Employed', 'Unemployed', 'Student'),
+        type: Sequelize.STRING,
         allowNull: true,
       },
       createdAt: {

@@ -26,14 +26,12 @@ const initializeModels = async () => {
     && file.indexOf('.test.js') === -1
   ));
 
-  // Import models asynchronously
   for (const file of files) {
     const modelModule = await import(path.join(__dirname, file));
     const model = modelModule.default(sequelize, Sequelize.DataTypes);
     db[model.name] = model;
   }
 
-  // Set up associations after all models have been loaded
   Object.keys(db).forEach((modelName) => {
     if (db[modelName].associate) {
       db[modelName].associate(db);
@@ -41,7 +39,7 @@ const initializeModels = async () => {
   });
 };
 
-// Use an Immediately Invoked Async Function Expression (IIFE) to allow top-level await
+// Initialize models asynchronously
 await initializeModels();
 
 db.sequelize = sequelize;
