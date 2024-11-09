@@ -1,73 +1,127 @@
-import { Sequelize, DataTypes } from 'sequelize';
+import { DataTypes } from 'sequelize';
 
-// Initialize Sequelize instance
-const sequelize = new Sequelize(process.env.DB_URI); // Replace with your database URI
-
-// JobApplication Model
-const JobApplication = sequelize.define('JobApplication', {
-  jobApplicationID: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-    allowNull: false,
-  },
-  userId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: 'Users',
-      key: 'id',
+export default (sequelize) => {
+  // Define JobApplication model
+  const JobApplication = sequelize.define('JobApplication', {
+    jobApplicationID: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+      allowNull: false,
     },
-    onDelete: 'CASCADE', // Automatically delete JobApplication if User is deleted
-  },
-});
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'Users',
+        key: 'id',
+      },
+      onDelete: 'CASCADE',
+    },
+  }, {
+    tableName: 'JobApplications',
+    timestamps: true,
+  });
 
-// JobDescription Model
-const JobDescription = sequelize.define('JobDescription', {
-  jobDescriptionID: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-    allowNull: false,
-  },
-  jobTitle: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  jobCompany: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  jobDescriptionBody: {
-    type: DataTypes.TEXT,
-    allowNull: true,
-  },
-});
+  // Define JobDescription model
+  const JobDescription = sequelize.define('JobDescription', {
+    jobDescriptionID: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+      allowNull: false,
+    },
+    jobTitle: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    jobCompany: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    jobDescriptionBody: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    jobApplicationID: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: JobApplication,
+        key: 'jobApplicationID',
+      },
+      onDelete: 'CASCADE',
+    },
+  }, {
+    tableName: 'JobDescriptions',
+    timestamps: true,
+  });
 
-// Document Model
-const Document = sequelize.define('Document', {
-  docId: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-    allowNull: false,
-  },
-  docType: {
-    type: DataTypes.ENUM('Resume', 'Cover Letter'),
-    allowNull: false,
-  },
-  docBody: {
-    type: DataTypes.TEXT,
-    allowNull: true,
-  },
-});
+  // Define Document model
+  const Document = sequelize.define('Document', {
+    docId: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+      allowNull: false,
+    },
+    docType: {
+      type: DataTypes.ENUM('Resume', 'Cover Letter'),
+      allowNull: false,
+    },
+    docBody: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    jobApplicationID: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: JobApplication,
+        key: 'jobApplicationID',
+      },
+      onDelete: 'CASCADE',
+    },
+  }, {
+    tableName: 'Documents',
+    timestamps: true,
+  });
 
-// Define Model Relationships
-JobApplication.hasOne(JobDescription, { foreignKey: 'jobApplicationID' });
-JobDescription.belongsTo(JobApplication, { foreignKey: 'jobApplicationID' });
+  // Define associations
+  JobApplication.associate = (models) => {
+    JobApplication.belongsTo(models.User, {
+      foreignKey: 'userId',
+      as: 'User',
+    });
 
-JobApplication.hasMany(Document, { foreignKey: 'jobApplicationID' });
-Document.belongsTo(JobApplication, { foreignKey: 'jobApplicationID' });
+    JobApplication.hasOne(models.JobDescription, {
+      foreignKey: 'jobApplicationID',
+      as: 'JobDescription',
+    });
 
-// Export the models and Sequelize instance
-export { sequelize, JobApplication, JobDescription, Document };
+    JobApplication.hasMany(models.Document, {
+      foreignKey: 'jobApplicationID',
+      as: 'Documents',
+    });
+  };
+
+  JobDescription.associate = (models) => {
+    JobDescription.belongsTo(models.JobApplication, {
+      foreignKey: 'jobApplicationID',
+      as: 'JobApplication',
+    });
+  };
+
+  Document.associate = (models) => {
+    Document.belongsTo(models.JobApplication, {
+      foreignKey: 'jobApplicationID',
+      as: 'JobApplication',
+    });
+  };
+
+  return {
+    JobApplication,
+    JobDescription,
+    Document,
+  };
+};
