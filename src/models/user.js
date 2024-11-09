@@ -34,7 +34,7 @@ export default (sequelize) => {
       },
     },
     jobStatus: {
-      type: DataTypes.STRING,
+      type: DataTypes.ENUM('Employed', 'Unemployed', 'Student'),
       allowNull: true,
     },
   }, {
@@ -60,6 +60,14 @@ export default (sequelize) => {
     const { password, createdAt, updatedAt, ...rest } = this.get();
     return rest;
   };
+
+  // User associations
+  // User.associate = (models) => {
+  User.associate = (models) => {
+    User.hasMany(models.Experience, { foreignKey: 'userId', as: 'Experiences' });
+    User.hasMany(models.JobApplication, { foreignKey: 'userId', as: 'JobApplications' });
+  };
+  // };
 
   return User;
 };
