@@ -1,3 +1,4 @@
+// src/models/document.js
 import { DataTypes } from 'sequelize';
 
 export default (sequelize) => {
@@ -11,10 +12,25 @@ export default (sequelize) => {
     docType: {
       type: DataTypes.ENUM('Resume', 'Cover Letter'),
       allowNull: false,
+      validate: {
+        isIn: {
+          args: [['Resume', 'Cover Letter']],
+          msg: 'docType must be either "Resume" or "Cover Letter".',
+        },
+        notNull: {
+          msg: 'Document type is required.',
+        },
+      },
     },
     docBody: {
       type: DataTypes.TEXT,
       allowNull: true,
+      validate: {
+        len: {
+          args: [0, 2000],
+          msg: 'Document content must not exceed 2000 characters.',
+        },
+      },
     },
     jobApplicationID: {
       type: DataTypes.INTEGER,
@@ -24,6 +40,15 @@ export default (sequelize) => {
         key: 'jobApplicationID',
       },
       onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
+      validate: {
+        isInt: {
+          msg: 'jobApplicationID must be an integer.',
+        },
+        notNull: {
+          msg: 'jobApplicationID is required for a Document.',
+        },
+      },
     },
   }, {
     tableName: 'Documents',
@@ -32,8 +57,13 @@ export default (sequelize) => {
 
   Document.associate = (models) => {
     Document.belongsTo(models.JobApplication, {
-      foreignKey: 'jobApplicationID',
+      foreignKey: {
+        name: 'jobApplicationID',
+        allowNull: false,
+      },
       as: 'JobApplication',
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
     });
   };
 
