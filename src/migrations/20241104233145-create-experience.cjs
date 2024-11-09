@@ -1,112 +1,146 @@
-'use strict';
-
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
+  async up(queryInterface, Sequelize) {
     await queryInterface.createTable('Experiences', {
-      ExperienceID: {
+      id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
         primaryKey: true,
         allowNull: false,
       },
-      UserID: {
+      userId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Users', 
+          model: 'Users',
           key: 'id',
         },
-        onDelete: 'CASCADE', // Automatically delete Experience if User is deleted
+        onDelete: 'CASCADE',
       },
-      ExperienceType: {
+      experienceType: {
         type: Sequelize.ENUM('Education', 'Employment'),
         allowNull: false,
       },
-      OrganizationName: {
+      organizationName: {
         type: Sequelize.STRING,
         allowNull: false,
-      },
-      StartDate: {
-        type: Sequelize.DATE,
-        allowNull: false,
-      },
-      EndDate: {
-        type: Sequelize.DATE,
-        allowNull: true,
       },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
       },
     });
 
+    // Create Employment table
     await queryInterface.createTable('Employments', {
-      ExperienceID: {
+      id: {
         type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
+        allowNull: false,
+      },
+      experienceId: {
+        type: Sequelize.INTEGER,
         references: {
           model: 'Experiences',
-          key: 'ExperienceID',
+          key: 'id',
         },
+        allowNull: false,
+        onDelete: 'CASCADE',
       },
-      JobTitle: {
+      jobTitle: {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      JobDescription: {
+      jobDescription: {
         type: Sequelize.TEXT,
         allowNull: true,
       },
+      startDate: {
+        type: Sequelize.DATE,
+        allowNull: false,
+      },
+      endDate: {
+        type: Sequelize.DATE,
+        allowNull: true,
+        validate: {
+          isAfterOrEqualToStartDate(value) {
+            if (this.StartDate && value && value <= this.StartDate) {
+              throw new Error('End date must be after or equal to the start date');
+            }
+          },
+        },
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
       },
     });
 
+    // Create Education table
     await queryInterface.createTable('Educations', {
-      ExperienceID: {
+      id: {
         type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
+        allowNull: false,
+      },
+      experienceId: {
+        type: Sequelize.INTEGER,
         references: {
           model: 'Experiences',
-          key: 'ExperienceID',
+          key: 'id',
         },
+        allowNull: false,
+        onDelete: 'CASCADE',
       },
-      Degree: {
+      degree: {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      Grade: {
+      fieldOfStudy: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      grade: {
         type: Sequelize.FLOAT,
         allowNull: true,
+      },
+      startDate: {
+        type: Sequelize.DATE,
+        allowNull: false,
+      },
+      endDate: {
+        type: Sequelize.DATE,
+        allowNull: true,
+        validate: {
+          isAfterOrEqualToStartDate(value) {
+            if (this.StartDate && value && value <= this.StartDate) {
+              throw new Error('End date must be after or equal to the start date');
+            }
+          },
+        },
       },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
       },
     });
   },
 
-  async down (queryInterface, Sequelize) {
+  async down(queryInterface) {
     await queryInterface.dropTable('Educations');
     await queryInterface.dropTable('Employments');
     await queryInterface.dropTable('Experiences');
