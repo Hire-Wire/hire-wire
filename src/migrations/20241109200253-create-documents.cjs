@@ -4,16 +4,16 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('Documents', {
-      docId: { type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true, allowNull: false },
+      id: { type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true, allowNull: false },
       docType: {
         type: Sequelize.ENUM('Resume', 'Cover Letter'),
         allowNull: false,
       },
       docBody: { type: Sequelize.TEXT, allowNull: true },
-      jobApplicationID: {
+      jobApplicationId: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        references: { model: 'JobApplications', key: 'jobApplicationID' },
+        references: { model: 'JobApplications', key: 'id' },
         onDelete: 'CASCADE',
       },
       createdAt: Sequelize.DATE,

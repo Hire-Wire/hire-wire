@@ -42,7 +42,7 @@ class JobApplicationController {
         jobTitle: jobAppTitle,
         jobCompany: jobAppCompany,
         jobDescriptionBody: jobAppDescription,
-        jobApplicationID: createdJobApplication.jobApplicationID,
+        jobApplicationId: createdJobApplication.id,
       });
 
       // Set job description on job application
@@ -67,8 +67,8 @@ class JobApplicationController {
    * Adds a document to an existing job application.
    */
   addDocument = async (req, res) => {
-    console.log('addDocument route reached with jobApplicationID:', req.params.jobApplicationID);
-    const { jobApplicationID } = req.params;
+    console.log('addDocument route reached with jobApplicationId:', req.params.id);
+    const { id } = req.params;
     const { docType, docBody } = req.body;
 
     if (!docType || !docBody) {
@@ -88,7 +88,7 @@ class JobApplicationController {
 
     try {
       const jobApplication = await JobApplication.findOne({
-        where: { jobApplicationID, userId: req.user.id },
+        where: { id, userId: req.user.id },
       });
 
       if (!jobApplication) {
@@ -102,7 +102,7 @@ class JobApplicationController {
       const newDocument = await Document.create({
         docType,
         docBody,
-        jobApplicationID,
+        jobApplicationId: id,
       });
 
       return res.status(201).json({
@@ -124,11 +124,11 @@ class JobApplicationController {
    * Retrieves a specific job application by ID, including JobDescription and attached documents.
    */
   getJobApplication = async (req, res) => {
-    const { jobApplicationID } = req.params;
+    const { id } = req.params;
 
     try {
       const jobApplication = await JobApplication.findOne({
-        where: { jobApplicationID, userId: req.user.id },
+        where: { id, userId: req.user.id },
         include: [
           { model: JobDescription, as: 'JobDescription' },
           { model: Document, as: 'Documents' },
@@ -161,10 +161,10 @@ class JobApplicationController {
    * Retrieves a document by its ID.
    */
   getDocumentByID = async (req, res) => {
-    const { documentID } = req.params;
+    const { id } = req.params;
 
     try {
-      const document = await Document.findByPk(documentID);
+      const document = await Document.findByPk(id);
 
       if (!document) {
         return res.status(404).json({
@@ -192,11 +192,11 @@ class JobApplicationController {
    * Deletes a job application and all its associated job description and documents.
    */
   deleteJobApplication = async (req, res) => {
-    const { jobApplicationID } = req.params;
+    const { id } = req.params;
 
     try {
       const jobApplication = await JobApplication.findOne({
-        where: { jobApplicationID, userId: req.user.id },
+        where: { id, userId: req.user.id },
       });
 
       if (!jobApplication) {

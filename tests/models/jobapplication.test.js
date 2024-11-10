@@ -7,9 +7,9 @@ let transaction;
 // Check if required tables exist in the database
 async function tableExists(tableName) {
   const result = await db.sequelize.query(
-    `SELECT table_name 
-     FROM information_schema.tables 
-     WHERE table_schema = '${db.sequelize.config.database}' 
+    `SELECT table_name
+     FROM information_schema.tables
+     WHERE table_schema = '${db.sequelize.config.database}'
        AND table_name = '${tableName}'`,
     { type: db.sequelize.QueryTypes.SELECT }
   );
@@ -155,7 +155,7 @@ describe('JobApplication Model', () => {
 
         const jobDescription = await db.JobDescription.create(
           {
-            jobApplicationID: jobApplication.jobApplicationID,
+            jobApplicationId: jobApplication.id,
             jobTitle: 'Software Engineer',
             jobCompany: 'Tech Company',
             jobDescriptionBody: 'Develops software solutions.',
@@ -185,8 +185,8 @@ describe('JobApplication Model', () => {
 
         await db.Document.bulkCreate(
           [
-            { jobApplicationID: jobApplication.jobApplicationID, docType: 'Resume', docBody: 'Resume content here...' },
-            { jobApplicationID: jobApplication.jobApplicationID, docType: 'Cover Letter', docBody: 'Cover letter content here...' },
+            { jobApplicationId: jobApplication.id, docType: 'Resume', docBody: 'Resume content here...' },
+            { jobApplicationId: jobApplication.id, docType: 'Cover Letter', docBody: 'Cover letter content here...' },
           ],
           { transaction: docTransaction }
         );
@@ -211,24 +211,24 @@ describe('JobApplication Model', () => {
         );
 
         await db.JobDescription.create(
-          { jobApplicationID: jobApplication.jobApplicationID, jobTitle: 'Software Engineer', jobCompany: 'Tech Company', jobDescriptionBody: 'Develops software solutions.' },
+          { jobApplicationId: jobApplication.id, jobTitle: 'Software Engineer', jobCompany: 'Tech Company', jobDescriptionBody: 'Develops software solutions.' },
           { transaction: cascadeTransaction }
         );
 
         await db.Document.create(
-          { jobApplicationID: jobApplication.jobApplicationID, docType: 'Resume', docBody: 'Resume content here...' },
+          { jobApplicationId: jobApplication.id, docType: 'Resume', docBody: 'Resume content here...' },
           { transaction: cascadeTransaction }
         );
 
         await jobApplication.destroy({ transaction: cascadeTransaction });
 
         const deletedJobDescription = await db.JobDescription.findOne({
-          where: { jobApplicationID: jobApplication.jobApplicationID },
+          where: { jobApplicationId: jobApplication.id },
           transaction: cascadeTransaction,
         });
 
         const deletedDocuments = await db.Document.findAll({
-          where: { jobApplicationID: jobApplication.jobApplicationID },
+          where: { jobApplicationId: jobApplication.id },
           transaction: cascadeTransaction,
         });
 
@@ -254,7 +254,7 @@ describe('JobApplication Model', () => {
         await expect(
           db.JobDescription.create(
             {
-              jobApplicationID: jobApplication.jobApplicationID,
+              jobApplicationId: jobApplication.id,
               jobTitle: 'A',
               jobCompany: 'Tech Company',
               jobDescriptionBody: 'Software development tasks',

@@ -2,7 +2,7 @@ import { DataTypes } from 'sequelize';
 
 export default (sequelize) => {
   const JobDescription = sequelize.define('JobDescription', {
-    jobDescriptionID: {
+    id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
@@ -44,12 +44,12 @@ export default (sequelize) => {
         },
       },
     },
-    jobApplicationID: {
+    jobApplicationId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: 'JobApplications',
-        key: 'jobApplicationID',
+        key: 'id',
       },
       onDelete: 'CASCADE', // Automatically delete JobDescription if JobApplication is deleted
       onUpdate: 'CASCADE', // Update foreign key if JobApplication ID is updated
@@ -70,7 +70,7 @@ export default (sequelize) => {
   JobDescription.associate = (models) => {
     JobDescription.belongsTo(models.JobApplication, {
       foreignKey: {
-        name: 'jobApplicationID',
+        name: 'jobApplicationId',
         allowNull: false,
       },
       as: 'JobApplication',

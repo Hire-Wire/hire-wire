@@ -4,7 +4,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('JobDescriptions', {
-      jobDescriptionID: {
+      id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
         primaryKey: true,
@@ -13,10 +13,10 @@ module.exports = {
       jobTitle: { type: Sequelize.STRING, allowNull: false },
       jobCompany: { type: Sequelize.STRING, allowNull: false },
       jobDescriptionBody: { type: Sequelize.TEXT, allowNull: true },
-      jobApplicationID: {
+      jobApplicationId: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        references: { model: 'JobApplications', key: 'jobApplicationID' },
+        references: { model: 'JobApplications', key: 'id' },
         onDelete: 'CASCADE',
       },
       createdAt: Sequelize.DATE,

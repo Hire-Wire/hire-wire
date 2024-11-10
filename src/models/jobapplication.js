@@ -2,7 +2,7 @@ import { DataTypes } from 'sequelize';
 
 export default (sequelize) => {
   const JobApplication = sequelize.define('JobApplication', {
-    jobApplicationID: {
+    id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
@@ -42,7 +42,7 @@ export default (sequelize) => {
 
     // One-to-one relationship with JobDescription
     JobApplication.hasOne(models.JobDescription, {
-      foreignKey: 'jobApplicationID',
+      foreignKey: 'jobApplicationId',
       as: 'JobDescription',
       onDelete: 'CASCADE',
       onUpdate: 'CASCADE',
@@ -50,7 +50,7 @@ export default (sequelize) => {
 
     // One-to-many relationship with Documents
     JobApplication.hasMany(models.Document, {
-      foreignKey: 'jobApplicationID',
+      foreignKey: 'jobApplicationId',
       as: 'Documents',
       onDelete: 'CASCADE',
       onUpdate: 'CASCADE',

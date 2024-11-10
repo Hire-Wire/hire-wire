@@ -3,7 +3,7 @@ import { DataTypes } from 'sequelize';
 
 export default (sequelize) => {
   const Document = sequelize.define('Document', {
-    docId: {
+    id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
@@ -32,21 +32,21 @@ export default (sequelize) => {
         },
       },
     },
-    jobApplicationID: {
+    jobApplicationId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: 'JobApplications',
-        key: 'jobApplicationID',
+        key: 'id',
       },
       onDelete: 'CASCADE',
       onUpdate: 'CASCADE',
       validate: {
         isInt: {
-          msg: 'jobApplicationID must be an integer.',
+          msg: 'jobApplicationId must be an integer.',
         },
         notNull: {
-          msg: 'jobApplicationID is required for a Document.',
+          msg: 'jobApplicationId is required for a Document.',
         },
       },
     },
@@ -58,7 +58,7 @@ export default (sequelize) => {
   Document.associate = (models) => {
     Document.belongsTo(models.JobApplication, {
       foreignKey: {
-        name: 'jobApplicationID',
+        name: 'jobApplicationId',
         allowNull: false,
       },
       as: 'JobApplication',
