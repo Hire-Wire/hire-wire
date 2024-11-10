@@ -9,7 +9,7 @@ import Authenticate from '../../src/utils/Authenticate.js';
 let authToken;
 let transaction;
 
-// Helper function to make requests to create job applications
+// Helper function to create job applications via request
 const createJobApplication = (data = {}, token = authToken) => {
   return new Promise((resolve, reject) => {
     request(app)
@@ -17,7 +17,8 @@ const createJobApplication = (data = {}, token = authToken) => {
       .set('Authorization', `Bearer ${token}`)
       .send(data)
       .end((err, res) => {
-        if (err) { reject(err); } else { resolve(res); }
+        if (err) reject(err);
+        else resolve(res);
       });
   });
 };
@@ -26,60 +27,30 @@ describe('JobApplication Controller', () => {
   let user;
 
   beforeAll(async () => {
-    // Step 1: Connect to the database
     try {
       await db.sequelize.authenticate();
-      console.log('Connected to the database.');
-    } catch (connectionError) {
-      console.error('Database connection error:', connectionError);
-      throw connectionError;
-    }
 
-    // Step 2: Run migrations to ensure all tables are set up
-    try {
       const umzug = new Umzug({
         migrations: { glob: 'src/migrations/*.js' },
         storage: new SequelizeStorage({ sequelize: db.sequelize }),
         context: db.sequelize.getQueryInterface(),
-        logger: console,
       });
-      await umzug.down({ to: 0 }); // Undo all migrations first
-      await umzug.up(); // Then apply all migrations again
-      console.log('All migrations ran successfully.');
-      // Debug: Verify tables after migration
-      const [tables] = await db.sequelize.query('SHOW TABLES;');
-      console.log('Tables in the test database:', tables);
-    } catch (migrationError) {
-      console.error('Error running migrations:', migrationError);
-      throw migrationError;
+      await umzug.down({ to: 0 }); // Roll back all migrations first
+      await umzug.up(); // Apply all migrations
+    } catch (error) {
+      throw error;
     }
 
-    // // Step 3: Cleanup - delete all records in a dependency-safe order
-    // try {
-    //   await db.User.destroy({ where: {}, cascade: true });
-    //   console.log('All test data deleted successfully.');
-    // } catch (cleanupError) {
-    //   console.error('Error during cleanup of test data:', cleanupError);
-    //   throw cleanupError;
-    // }
-
-    // Step 4: Set up a mock user and auth token for testing
     try {
-      // Setup mock user
       user = { id: 1, email: 'test@example.com', firstName: 'John', lastName: 'Doe' };
-
-      console.log('Token generated and verified successfully.');
     } catch (error) {
-      console.error('Error generating or verifying token:', error);
-      throw error; // rethrow to fail the test setup if there's an issue
+      throw error;
     }
   });
 
   beforeEach(async () => {
-    // Find an existing user or create one if not found
     user = await db.User.findOne({ where: { email: 'test@example.com' } });
     if (!user) {
-      // Create a new user if not already in the database
       user = await db.User.create({
         email: 'test@example.com',
         password: 'password123',
@@ -87,8 +58,6 @@ describe('JobApplication Controller', () => {
         lastName: 'Doe',
       });
     }
-
-    // Generate an authentication token for the current user
     authToken = await Authenticate.generateToken(user);
   });
 
@@ -100,192 +69,127 @@ describe('JobApplication Controller', () => {
 
   afterAll(async () => {
     await db.sequelize.close();
-    console.log('Database connection closed.');
   });
 
-  describe('JobApplication Controller', () => {
-    describe('POST /api/v1/job-application', () => {
-      test('should create a job application with a valid job description', async () => {
-        try {
-          const response = await createJobApplication({
-            jobAppTitle: 'Software Engineer',
-            jobAppCompany: 'Tech Corp',
-            jobAppDescription: 'Responsible for developing software solutions',
-          });
-
-          expect(response.statusCode).toBe(201);
-          expect(response.body.success).toBe(true);
-          expect(response.body.jobApplication).toHaveProperty('id');
-        } catch (error) {
-          console.error('Error in creating job application test:', error);
-          throw error;
-        }
+  describe('POST /api/v1/job-application', () => {
+    test('should create a job application with a valid job description', async () => {
+      const response = await createJobApplication({
+        jobAppTitle: 'Software Engineer',
+        jobAppCompany: 'Tech Corp',
+        jobAppDescription: 'Responsible for developing software solutions',
       });
 
-      test('should fail when required fields are missing', async () => {
-        try {
-          const response = await createJobApplication({});
-
-          expect(response.statusCode).toBe(400);
-          expect(response.body.success).toBe(false);
-          expect(response.body.message).toMatch(/Job title is required and must be between 2 and 100 characters./i);
-        } catch (error) {
-          console.error('Error in missing fields test:', error);
-          throw error;
-        }
-      });
+      expect(response.statusCode).toBe(201);
+      expect(response.body.success).toBe(true);
+      expect(response.body.jobApplication).toHaveProperty('id');
     });
 
-    describe('POST /api/v1/job-application/:id/documents', () => {
-      test('should add a document to a job application', async () => {
-        // Create a job application specifically for this test
-        const docTestJobApplication = await db.JobApplication.create({ userId: user.id });
+    test('should fail when required fields are missing', async () => {
+      const response = await createJobApplication({});
+      expect(response.statusCode).toBe(400);
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toMatch(/Job title is required and must be between 2 and 100 characters./i);
+    });
+  });
 
-        const response = await request(app)
-          .post(`/api/v1/job-application/${docTestJobApplication.id}/documents`)
-          .set('Authorization', `Bearer ${authToken}`)
-          .send({
-            docType: 'Resume', // Valid document type
-            docBody: 'Resume content here...',
-          });
+  describe('POST /api/v1/job-application/:id/documents', () => {
+    test('should add a document to a job application', async () => {
+      const docTestJobApplication = await db.JobApplication.create({ userId: user.id });
 
-        // Debugging log to inspect the response status and body
-        console.log('Response Status:', response.statusCode);
-        console.log('Response Body:', response.body);
-
-        // Check the response to ensure the document was added
-        expect(response.statusCode).toBe(201);
-        expect(response.body.success).toBe(true);
-        expect(response.body.document).toHaveProperty('jobApplicationId');
-
-        // Verify the document is associated with the correct job application in the database
-        const document = await db.Document.findOne({
-          where: {
-            id: response.body.document.id,
-            jobApplicationId: docTestJobApplication.id,
-          },
+      const response = await request(app)
+        .post(`/api/v1/job-application/${docTestJobApplication.id}/documents`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          docType: 'Resume',
+          docBody: 'Resume content here...',
         });
-        expect(document).not.toBeNull();
-        expect(document.jobApplicationId).toBe(docTestJobApplication.id);
+
+      expect(response.statusCode).toBe(201);
+      expect(response.body.success).toBe(true);
+      expect(response.body.document).toHaveProperty('jobApplicationId');
+
+      const document = await db.Document.findOne({
+        where: { id: response.body.document.id, jobApplicationId: docTestJobApplication.id },
       });
-
-      test('should fail with invalid document type', async () => {
-        // Create a job application specifically for this test
-        const docTestJobApplication = await db.JobApplication.create({ userId: user.id });
-
-        // Send a request with an invalid document type
-        const response = await request(app)
-          .post(`/api/v1/job-application/${docTestJobApplication.id}/documents`)
-          .set('Authorization', `Bearer ${authToken}`)
-          .send({
-            docType: 'InvalidDocType', // Invalid document type
-            docBody: 'Invalid content here...',
-          });
-
-        // Debugging log to inspect the response status and body
-        console.log('Response Status:', response.statusCode);
-        console.log('Response Body:', response.body);
-
-        // Check response to ensure the document type validation fails
-        expect(response.statusCode).toBe(400);
-        expect(response.body.success).toBe(false);
-        expect(response.body.message).toMatch(/Invalid document type/i);
-      });
+      expect(document).not.toBeNull();
+      expect(document.jobApplicationId).toBe(docTestJobApplication.id);
     });
 
-    describe('GET /api/v1/job-application/:id', () => {
-      let jobApplication;
-      let authToken;
+    test('should fail with invalid document type', async () => {
+      const docTestJobApplication = await db.JobApplication.create({ userId: user.id });
 
-      beforeEach(async () => {
-        // Set up user and auth token
-        authToken = Authenticate.generateToken(user); // Assuming `user` is defined globally or in an outer scope
+      const response = await request(app)
+        .post(`/api/v1/job-application/${docTestJobApplication.id}/documents`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          docType: 'InvalidDocType',
+          docBody: 'Invalid content here...',
+        });
 
-        // Create a job application specifically for this test
-        jobApplication = await db.JobApplication.create({ userId: user.id });
-        console.log('Created JobApplication with ID:', jobApplication.id); // Log to confirm creation
-      });
+      expect(response.statusCode).toBe(400);
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toMatch(/Invalid document type/i);
+    });
+  });
 
-      test('should retrieve a job application with description', async () => {
-        // Make GET request to retrieve the job application
-        const response = await request(app)
-          .get(`/api/v1/job-application/${jobApplication.id}`)
-          .set('Authorization', `Bearer ${authToken}`);
+  describe('GET /api/v1/job-application/:id', () => {
+    let jobApplication;
 
-        // Log the response for debugging
-        console.log('Response Status:', response.statusCode);
-        console.log('Response Body:', response.body);
-
-        // Assertions
-        expect(response.statusCode).toBe(200);
-        expect(response.body.success).toBe(true);
-        expect(response.body.jobApplication).toHaveProperty('JobDescription');
-      });
-
-      test('should return 404 for non-existent job application', async () => {
-        // Make GET request to a non-existent job application
-        const response = await request(app)
-          .get('/api/v1/job-application/9999')
-          .set('Authorization', `Bearer ${authToken}`);
-
-        // Log the response for debugging
-        console.log('Response Status:', response.statusCode);
-        console.log('Response Body:', response.body);
-
-        // Assertions
-        expect(response.statusCode).toBe(404);
-        expect(response.body.success).toBe(false);
-        expect(response.body.message).toMatch(/not found/i);
-      });
+    beforeEach(async () => {
+      authToken = Authenticate.generateToken(user);
+      jobApplication = await db.JobApplication.create({ userId: user.id });
     });
 
-    describe('DELETE /api/v1/job-application/:id', () => {
-      let authToken;
-      let jobApplication;
+    test('should retrieve a job application with description', async () => {
+      const response = await request(app)
+        .get(`/api/v1/job-application/${jobApplication.id}`)
+        .set('Authorization', `Bearer ${authToken}`);
 
-      beforeEach(async () => {
-        // Generate auth token for each test
-        authToken = Authenticate.generateToken(user); // Assuming `user` is defined in an outer scope
-      });
+      expect(response.statusCode).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.jobApplication).toHaveProperty('JobDescription');
+    });
 
-      test('should delete a job application and associated data', async () => {
-        // Create a job application specifically for this test
-        jobApplication = await db.JobApplication.create({ userId: user.id });
-        console.log('Created JobApplication with ID:', jobApplication.id); // Log to confirm creation
+    test('should return 404 for non-existent job application', async () => {
+      const response = await request(app)
+        .get('/api/v1/job-application/9999')
+        .set('Authorization', `Bearer ${authToken}`);
 
-        // Send DELETE request to remove the job application
-        const response = await request(app)
-          .delete(`/api/v1/job-application/${jobApplication.id}`)
-          .set('Authorization', `Bearer ${authToken}`);
+      expect(response.statusCode).toBe(404);
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toMatch(/not found/i);
+    });
+  });
 
-        // Log response for debugging
-        console.log('Response Status:', response.statusCode);
-        console.log('Response Body:', response.body);
+  describe('DELETE /api/v1/job-application/:id', () => {
+    let jobApplication;
 
-        // Assertions to confirm successful deletion
-        expect(response.statusCode).toBe(200);
-        expect(response.body.success).toBe(true);
+    beforeEach(async () => {
+      authToken = Authenticate.generateToken(user);
+    });
 
-        // Verify deletion in the database
-        const deletedJobApp = await db.JobApplication.findByPk(jobApplication.id);
-        expect(deletedJobApp).toBeNull();
-      });
+    test('should delete a job application and associated data', async () => {
+      jobApplication = await db.JobApplication.create({ userId: user.id });
 
-      test('should return 404 for non-existent job application', async () => {
-        // Attempt to delete a non-existent job application
-        const response = await request(app)
-          .delete('/api/v1/job-application/9999')
-          .set('Authorization', `Bearer ${authToken}`);
+      const response = await request(app)
+        .delete(`/api/v1/job-application/${jobApplication.id}`)
+        .set('Authorization', `Bearer ${authToken}`);
 
-        // Log response for debugging
-        console.log('Response Status:', response.statusCode);
-        console.log('Response Body:', response.body);
+      expect(response.statusCode).toBe(200);
+      expect(response.body.success).toBe(true);
 
-        // Assertions to confirm 404 response
-        expect(response.statusCode).toBe(404);
-        expect(response.body.success).toBe(false);
-        expect(response.body.message).toMatch(/not found/i);
-      });
+      const deletedJobApp = await db.JobApplication.findByPk(jobApplication.id);
+      expect(deletedJobApp).toBeNull();
+    });
+
+    test('should return 404 for non-existent job application', async () => {
+      const response = await request(app)
+        .delete('/api/v1/job-application/9999')
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(response.statusCode).toBe(404);
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toMatch(/not found/i);
     });
   });
 });

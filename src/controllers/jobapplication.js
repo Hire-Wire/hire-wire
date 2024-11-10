@@ -50,7 +50,6 @@ class JobApplicationController {
         jobApplication: createdJobApplication,
       });
     } catch (error) {
-      console.error('Error in createJobApplication:', error);
       return res.status(500).json({
         success: false,
         message: 'Failed to create job application.',
@@ -105,7 +104,6 @@ class JobApplicationController {
         document: newDocument,
       });
     } catch (error) {
-      console.error('Error in addDocument:', error);
       return res.status(500).json({
         success: false,
         message: 'Failed to add document.',
@@ -142,7 +140,6 @@ class JobApplicationController {
         jobApplication,
       });
     } catch (error) {
-      console.error('Error in getJobApplication:', error);
       return res.status(500).json({
         success: false,
         message: 'Failed to retrieve job application.',
@@ -173,7 +170,6 @@ class JobApplicationController {
         document,
       });
     } catch (error) {
-      console.error('Error in getDocumentByID:', error);
       return res.status(500).json({
         success: false,
         message: 'Failed to retrieve document.',
@@ -207,7 +203,6 @@ class JobApplicationController {
         message: 'Job application and all associated data deleted successfully.',
       });
     } catch (error) {
-      console.error('Error in deleteJobApplication:', error);
       return res.status(500).json({
         success: false,
         message: 'Failed to delete job application.',
