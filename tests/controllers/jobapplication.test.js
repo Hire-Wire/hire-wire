@@ -10,7 +10,7 @@ let authToken;
 let transaction;
 
 // Helper function to make requests to create job applications
-const createJobApplication = async (data = {}, token = authToken) => request(app)
+const createJobApplication = (data = {}, token = authToken) => request(app)
   .post('/api/v1/job-application')
   .set('Authorization', `Bearer ${token}`)
   .send(data);
