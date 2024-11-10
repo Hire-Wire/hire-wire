@@ -10,10 +10,17 @@ let authToken;
 let transaction;
 
 // Helper function to make requests to create job applications
-const createJobApplication = (data = {}, token = authToken) => request(app)
-  .post('/api/v1/job-application')
-  .set('Authorization', `Bearer ${token}`)
-  .send(data);
+const createJobApplication = (data = {}, token = authToken) => {
+  return new Promise((resolve, reject) => {
+    request(app)
+      .post('/api/v1/job-application')
+      .set('Authorization', `Bearer ${token}`)
+      .send(data)
+      .end((err, res) => {
+        if (err) { reject(err); } else { resolve(res); }
+      });
+  });
+};
 
 describe('JobApplication Controller', () => {
   let user;
