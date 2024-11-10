@@ -126,14 +126,14 @@ describe('JobApplication Controller', () => {
       });
     });
 
-    describe('POST /api/v1/jobapplication/:jobApplicationID/documents', () => {
+    describe('POST /api/v1/job-application/:jobApplicationID/documents', () => {
       test('should add a document to a job application', async () => {
         // Create a job application specifically for this test
         const docTestJobApplication = await db.JobApplication.create({ userId: user.id });
-        console.log('JobApplication ID:', docTestJobApplication.jobApplicationID); // Debugging log for jobApplicationID
-
-        // Log the authToken to ensure it's correct
-        console.log('AuthToken:', authToken);
+        // console.log('JobApplication ID:', docTestJobApplication.jobApplicationID); // Debugging log for jobApplicationID
+        //
+        // // Log the authToken to ensure it's correct
+        // console.log('AuthToken:', authToken);
 
         // Send a request to add a document to the job application
         const response = await request(app)
