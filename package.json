@@ -12,7 +12,9 @@
     "db:migrate": "sequelize db:migrate",
     "db:setup": "sequelize-cli db:create && npm run db:migrate",
     "db:migrate:test": "NODE_ENV=test sequelize db:migrate:undo:all && NODE_ENV=test sequelize db:migrate",
-    "db:setup:test": "NODE_ENV=test sequelize-cli db:create && npm run db:migrate:test && NODE_ENV=test sequelize db:seed:all"
+    "db:setup:test": "NODE_ENV=test sequelize-cli db:create && npm run db:migrate:test && NODE_ENV=test sequelize db:seed:all",
+    "generate-migration": "npx sequelize-cli migration:generate --name",
+    "rename-migrations": "rename 's/\\.js$/.cjs/' src/migrations/*.js"
   },
   "repository": {
     "type": "git",
@@ -37,6 +39,7 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "sequelize": "^6.37.4",
+    "umzug": "^3.8.2",
     "winston": "^3.15.0"
   },
   "devDependencies": {
