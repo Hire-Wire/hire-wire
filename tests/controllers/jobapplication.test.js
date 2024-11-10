@@ -53,14 +53,14 @@ describe('JobApplication Controller', () => {
       throw migrationError;
     }
 
-    // Step 3: Cleanup - delete all records in a dependency-safe order
-    try {
-      await db.User.destroy({ where: {}, cascade: true });
-      console.log('All test data deleted successfully.');
-    } catch (cleanupError) {
-      console.error('Error during cleanup of test data:', cleanupError);
-      throw cleanupError;
-    }
+    // // Step 3: Cleanup - delete all records in a dependency-safe order
+    // try {
+    //   await db.User.destroy({ where: {}, cascade: true });
+    //   console.log('All test data deleted successfully.');
+    // } catch (cleanupError) {
+    //   console.error('Error during cleanup of test data:', cleanupError);
+    //   throw cleanupError;
+    // }
 
     // Step 4: Set up a mock user and auth token for testing
     try {
