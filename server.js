@@ -43,6 +43,12 @@ app.use((req, res, next) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
+app._router.stack.forEach((middleware) => {
+  if (middleware.route) {
+    console.log(middleware.route);
+  }
+});
+
 // Start the server
 if (process.env.NODE_ENV !== 'test') {
   app.listen(port, () => {

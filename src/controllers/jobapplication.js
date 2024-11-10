@@ -10,6 +10,7 @@ class JobApplicationController {
    * @param {object} res - The response object used to send back the status and result.
    */
   createJobApplication = async (req, res) => {
+    console.log('Inside createJobApplication handler:', req.user); // Log user data
     const userId = req.user?.id;
     const { jobAppTitle, jobAppCompany, jobAppDescription, ...jobAppData } = req.body;
 
@@ -17,10 +18,17 @@ class JobApplicationController {
       return res.status(401).json({ success: false, message: 'User authentication required.' });
     }
 
-    if (!jobAppTitle || !jobAppCompany || !jobAppDescription) {
+    if (!jobAppTitle || jobAppTitle.length < 2 || jobAppTitle.length > 100) {
       return res.status(400).json({
         success: false,
-        message: 'Job title, company, and description are required fields.',
+        message: 'Job title is required and must be between 2 and 100 characters.',
+      });
+    }
+
+    if (!jobAppCompany || !jobAppDescription) {
+      return res.status(400).json({
+        success: false,
+        message: 'Job company and description are required fields.',
       });
     }
 
@@ -45,6 +53,7 @@ class JobApplicationController {
         jobApplication: createdJobApplication,
       });
     } catch (error) {
+      console.error('Error in createJobApplication:', error);
       return res.status(500).json({
         success: false,
         message: 'Failed to create job application.',
@@ -57,6 +66,7 @@ class JobApplicationController {
    * Adds a document to an existing job application.
    */
   addDocument = async (req, res) => {
+    console.log('addDocument route reached with jobApplicationID:', req.params.jobApplicationID);
     const { jobApplicationID } = req.params;
     const { docType, docBody } = req.body;
 
@@ -76,12 +86,14 @@ class JobApplicationController {
     }
 
     try {
-      const jobApplication = await JobApplication.findByPk(jobApplicationID);
+      const jobApplication = await JobApplication.findOne({
+        where: { jobApplicationID, userId: req.user.id },
+      });
 
       if (!jobApplication) {
         return res.status(404).json({
           success: false,
-          message: 'Job application not found.',
+          message: 'Job application not found or access denied.',
         });
       }
 
@@ -97,6 +109,7 @@ class JobApplicationController {
         document: newDocument,
       });
     } catch (error) {
+      console.error('Error in addDocument:', error);
       return res.status(500).json({
         success: false,
         message: 'Failed to add document.',
@@ -113,7 +126,7 @@ class JobApplicationController {
 
     try {
       const jobApplication = await JobApplication.findOne({
-        where: { jobApplicationID },
+        where: { jobApplicationID, userId: req.user.id },
         include: [
           { model: JobDescription, as: 'JobDescription' },
           { model: Document, as: 'Documents' },
@@ -123,15 +136,17 @@ class JobApplicationController {
       if (!jobApplication) {
         return res.status(404).json({
           success: false,
-          message: 'Job application not found.',
+          message: 'Job application not found or access denied.',
         });
       }
+
       return res.status(200).json({
         success: true,
         message: 'Job application retrieved successfully.',
         jobApplication,
       });
     } catch (error) {
+      console.error('Error in getJobApplication:', error);
       return res.status(500).json({
         success: false,
         message: 'Failed to retrieve job application.',
@@ -162,6 +177,7 @@ class JobApplicationController {
         document,
       });
     } catch (error) {
+      console.error('Error in getDocumentByID:', error);
       return res.status(500).json({
         success: false,
         message: 'Failed to retrieve document.',
@@ -177,12 +193,14 @@ class JobApplicationController {
     const { jobApplicationID } = req.params;
 
     try {
-      const jobApplication = await JobApplication.findByPk(jobApplicationID);
+      const jobApplication = await JobApplication.findOne({
+        where: { jobApplicationID, userId: req.user.id },
+      });
 
       if (!jobApplication) {
         return res.status(404).json({
           success: false,
-          message: 'Job application not found.',
+          message: 'Job application not found or access denied.',
         });
       }
 
@@ -193,6 +211,7 @@ class JobApplicationController {
         message: 'Job application and all associated data deleted successfully.',
       });
     } catch (error) {
+      console.error('Error in deleteJobApplication:', error);
       return res.status(500).json({
         success: false,
         message: 'Failed to delete job application.',
