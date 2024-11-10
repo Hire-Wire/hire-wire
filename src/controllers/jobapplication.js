@@ -6,8 +6,6 @@ const { JobApplication, JobDescription, Document } = db;
 class JobApplicationController {
   /**
    * Creates a new job application and associates a job description with it.
-   * @param {object} req - The request object, containing job application and job description data.
-   * @param {object} res - The response object used to send back the status and result.
    */
   createJobApplication = async (req, res) => {
     const userId = req.user?.id;
@@ -32,7 +30,6 @@ class JobApplicationController {
     }
 
     try {
-      // Ensure the created job application and job description are completed before proceeding
       const createdJobApplication = await JobApplication.create({
         ...jobAppData,
         userId,
@@ -45,7 +42,6 @@ class JobApplicationController {
         jobApplicationId: createdJobApplication.id,
       });
 
-      // Set job description on job application
       await createdJobApplication.setDataValue('JobDescription', createdJobDescription);
 
       return res.status(201).json({
@@ -67,7 +63,6 @@ class JobApplicationController {
    * Adds a document to an existing job application.
    */
   addDocument = async (req, res) => {
-    console.log('addDocument route reached with jobApplicationId:', req.params.id);
     const { id } = req.params;
     const { docType, docBody } = req.body;
 
@@ -98,7 +93,6 @@ class JobApplicationController {
         });
       }
 
-      // Await document creation to ensure successful creation before sending response
       const newDocument = await Document.create({
         docType,
         docBody,
@@ -206,7 +200,6 @@ class JobApplicationController {
         });
       }
 
-      // Await deletion to ensure completion before responding
       await jobApplication.destroy();
 
       return res.status(200).json({
