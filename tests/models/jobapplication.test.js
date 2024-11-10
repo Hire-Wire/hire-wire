@@ -244,35 +244,26 @@ describe('JobApplication Model', () => {
 
   describe('Field Validations and Constraints', () => {
     test('should not allow jobTitle shorter than 2 characters', async () => {
-      if (!user) {
-        user = await db.User.create({
-          email: 'test@example.com',
-          password: 'password123',
-          firstName: 'John',
-          lastName: 'Doe',
-        });
-      }
-      console.log('User ID:', user ? user.id : 'undefined');
-
       const validationTransaction = await db.sequelize.transaction();
       try {
         const jobApplication = await db.JobApplication.create(
           { userId: user.id },
           { transaction: validationTransaction }
         );
-        console.log('JobApplication ID:', jobApplication ? jobApplication.jobApplicationID : 'undefined');
 
         await expect(
           db.JobDescription.create(
             {
               jobApplicationID: jobApplication.jobApplicationID,
-              jobTitle: 'A', // Intentionally too short
+              jobTitle: 'A',
               jobCompany: 'Tech Company',
               jobDescriptionBody: 'Software development tasks',
             },
             { transaction: validationTransaction }
           )
-        ).rejects.toThrow('Validation error: Job title should be between 2 and 100 characters');
+        )
+          .rejects
+          .toThrow('Validation error: Job title should be between 2 and 100 characters');
 
         await validationTransaction.commit();
       } catch (error) {
@@ -281,5 +272,4 @@ describe('JobApplication Model', () => {
       }
     });
   });
-
 });
