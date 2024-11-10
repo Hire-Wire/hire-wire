@@ -38,6 +38,9 @@ describe('JobApplication Controller', () => {
       });
       await umzug.up(); // Run all migrations
       console.log('All migrations ran successfully.');
+      // Debug: Verify tables after migration
+      const [tables] = await db.sequelize.query('SHOW TABLES;');
+      console.log('Tables in the test database:', tables);
     } catch (migrationError) {
       console.error('Error running migrations:', migrationError);
       throw migrationError;
