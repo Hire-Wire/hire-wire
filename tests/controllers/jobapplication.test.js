@@ -43,7 +43,8 @@ describe('JobApplication Controller', () => {
         context: db.sequelize.getQueryInterface(),
         logger: console,
       });
-      await umzug.up(); // Run all migrations
+      await umzug.down({ to: 0 }); // Undo all migrations first
+      await umzug.up(); // Then apply all migrations again
       console.log('All migrations ran successfully.');
       // Debug: Verify tables after migration
       const [tables] = await db.sequelize.query('SHOW TABLES;');
