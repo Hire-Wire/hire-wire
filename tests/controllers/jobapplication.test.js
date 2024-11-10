@@ -76,18 +76,20 @@ describe('JobApplication Controller', () => {
   });
 
   beforeEach(async () => {
-    const existingUser = await db.User.findOne({ where: { email: 'test@example.com' } });
-    if (!existingUser) {
+    // Find an existing user or create one if not found
+    user = await db.User.findOne({ where: { email: 'test@example.com' } });
+    if (!user) {
+      // Create a new user if not already in the database
       user = await db.User.create({
         email: 'test@example.com',
         password: 'password123',
         firstName: 'John',
         lastName: 'Doe',
       });
-    } else {
-      user = existingUser;
     }
-    authToken = Authenticate.generateToken(user);
+
+    // Generate an authentication token for the current user
+    authToken = await Authenticate.generateToken(user);
   });
 
   afterEach(async () => {
