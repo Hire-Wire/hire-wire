@@ -10,7 +10,7 @@ class JobApplicationController {
    * @param {object} res - The response object used to send back the status and result.
    */
   createJobApplication = async (req, res) => {
-    console.log('Inside createJobApplication handler:', req.user); // Log user data
+    // console.log('Inside createJobApplication handler:', req.user); // Log user data
     const userId = req.user?.id;
     const { jobAppTitle, jobAppCompany, jobAppDescription, ...jobAppData } = req.body;
 
