@@ -71,8 +71,8 @@ jobs:
           DATABASE_URL: mysql://test_user:test_password@127.0.0.1:3306/test_db
         run: |
           echo "Running migrations..."
-          npx sequelize-cli db:migrate --config src/config/config-wrapper.cjs
-          echo "Migrations completed successfully."
+          npx sequelize-cli db:migrate
+          echo "Migrations completed successfully." --config src/config/config-wrapper.cjs
 
       - name: Run Tests
         run: npm test
