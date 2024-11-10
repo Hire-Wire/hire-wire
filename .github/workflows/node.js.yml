@@ -45,12 +45,31 @@ jobs:
       JWT_SECRET: your_jwt_secret
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        # cache: 'npm'
-    - run: npm install
-    - run: npm run build --if-present
-    - run: npm test
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          # cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build the Application
+        run: npm run build --if-present
+
+      - name: Wait for Database to be Ready
+        run: |
+          until mysqladmin ping -h $DB_HOST_TEST -u $DB_USER_TEST --password=$DB_PASSWORD_TEST; do
+            echo "Waiting for database connection..."
+            sleep 3
+          done
+
+      - name: Run Database Migrations
+        env:
+          DATABASE_URL: mysql://test_user:test_password@127.0.0.1:3306/test_db
+        run: npx sequelize-cli db:migrate
+
+      - name: Run Tests
+        run: npm test
