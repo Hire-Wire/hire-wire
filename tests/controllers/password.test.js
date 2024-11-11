@@ -39,22 +39,16 @@ describe('PasswordController', () => {
   });
 
   beforeEach(async () => {
-    try {
-      await db.User.destroy({ where: { email: 'test@example.com' } });
-
-      // Set up a user with a mock hashed password
+    user = await db.User.findOne({ where: { email: 'test@example.com' } });
+    if (!user) {
       user = await db.User.create({
         email: 'test@example.com',
-        password: 'hashed_OldPassword123', // This simulates the hashed password
+        password: 'password123',
         firstName: 'John',
         lastName: 'Doe',
       });
-
-      authToken = await Authenticate.generateToken(user);
-    } catch (error) {
-      console.error('Error in beforeEach user setup:', error);
-      throw error;
     }
+    authToken = await Authenticate.generateToken(user);
   });
 
   afterEach(async () => {
