@@ -71,7 +71,7 @@ describe('PasswordController', () => {
       const updatedUser = await db.User.findOne({ where: { email: 'test@example.com' } });
       expect(updatedUser.password).toMatch(/^\$2[abxy]\$.{56}$/); // Check if it's a bcrypt hash
 
-      bcrypt.compare.mockRestore(); // Restore bcrypt.compare after the test
+      await bcrypt.compare.mockRestore(); // Restore bcrypt.compare after the test
     });
 
     test('should not change password if the new passwords do not match', async () => {
@@ -104,7 +104,7 @@ describe('PasswordController', () => {
       expect(response.statusCode).toBe(400);
       expect(response.body).toHaveProperty('message', 'Old password is incorrect');
 
-      bcrypt.compare.mockRestore(); // Restore bcrypt.compare after the test
+      await bcrypt.compare.mockRestore(); // Restore bcrypt.compare after the test
     });
   });
 });
