@@ -10,7 +10,7 @@ import Authenticate from '../../src/utils/Authenticate.js';
 // Mock bcrypt.hash to always return 'hashed_NewPassword123'
 jest.mock('bcrypt', () => ({
   ...jest.requireActual('bcrypt'),
-  hash: jest.fn(async plainText => `hashed_${plainText}`),
+  hash: jest.fn(plainText => `hashed_${plainText}`),
 }));
 
 let authToken;
