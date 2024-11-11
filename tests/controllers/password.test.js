@@ -114,7 +114,7 @@ describe('PasswordController', () => {
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveProperty('message', 'Password changed successfully');
 
-      const updatedUser = await db.User.findOne({ where: { email: 'test@example.com' } });
+      const updatedUser = await db.User.findOne({ where: { email: uniqueEmail } });
       expect(updatedUser.password).toMatch(/^\$2[abxy]\$.{56}$/);
 
       bcrypt.compare.mockRestore();
