@@ -19,7 +19,21 @@ let user;
 describe('PasswordController', () => {
   beforeAll(async () => {
     try {
-      await db.sequelize.authenticate();
+      let retryCount = 3;
+      while (retryCount > 0) {
+        try {
+          // Ensure the database connection is live
+          await db.sequelize.authenticate();
+          console.log('Database connection established.');
+          break;
+        } catch (error) {
+          retryCount -= 1;
+          if (retryCount === 0) throw error;
+          console.warn(`Retrying database connection... (${3 - retryCount}/3)`);
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait before retrying
+        }
+      }
+
       const umzug = new Umzug({
         migrations: { glob: 'src/migrations/*.js' },
         storage: new SequelizeStorage({ sequelize: db.sequelize }),
@@ -28,9 +42,15 @@ describe('PasswordController', () => {
 
       await umzug.down({ to: 0 });
       await umzug.up();
+      console.log('Migrations applied successfully.');
 
-      // Confirm the Users table exists
-      await db.sequelize.query("SHOW TABLES LIKE 'Users';");
+      // Confirm the Users table exists after migrations
+      const tables = await db.sequelize.query("SHOW TABLES LIKE 'Users';");
+      if (tables[0].length === 0) {
+        throw new Error("Users table not found after migrations.");
+      }
+      console.log('Users table confirmed.');
+
     } catch (error) {
       console.error('Error during beforeAll setup:', error);
       throw error;
@@ -51,15 +71,18 @@ describe('PasswordController', () => {
             firstName: 'John',
             lastName: 'Doe',
           });
+          console.log('Test user created successfully.');
           break; // Break out if creation is successful
         } catch (error) {
           retryCount -= 1;
+          console.warn(`Retrying user creation... (${3 - retryCount}/3)`);
           if (retryCount === 0) throw error;
           await new Promise(resolve => setTimeout(resolve, 1000)); // Wait before retrying
         }
       }
 
       authToken = await Authenticate.generateToken(user);
+
     } catch (error) {
       console.error('Error during user creation in beforeEach:', error);
       throw error;
@@ -67,11 +90,21 @@ describe('PasswordController', () => {
   });
 
   afterEach(async () => {
-    await db.User.destroy({ where: { email: 'test@example.com' } });
+    try {
+      await db.User.destroy({ where: { email: 'test@example.com' } });
+      console.log('Test user cleaned up successfully.');
+    } catch (error) {
+      console.error('Error during cleanup in afterEach:', error);
+    }
   });
 
   afterAll(async () => {
-    await db.sequelize.close();
+    try {
+      await db.sequelize.close();
+      console.log('Database connection closed.');
+    } catch (error) {
+      console.error('Error closing database connection in afterAll:', error);
+    }
   });
 
   describe('POST /api/v1/users/change-password/:id', () => {
