@@ -10,7 +10,7 @@ import Authenticate from '../../src/utils/Authenticate.js';
 // Mock bcrypt.hash to always return 'hashed_NewPassword123'
 jest.mock('bcrypt', () => ({
   ...jest.requireActual('bcrypt'),
-  hash: jest.fn(async (plainText) => `hashed_${plainText}`),
+  hash: jest.fn(async plainText => `hashed_${plainText}`),
 }));
 
 let authToken;
@@ -18,28 +18,43 @@ let user;
 
 describe('PasswordController', () => {
   beforeAll(async () => {
-    const umzug = new Umzug({
-      migrations: { glob: 'src/migrations/*.js' },
-      storage: new SequelizeStorage({ sequelize: db.sequelize }),
-      context: db.sequelize.getQueryInterface(),
-    });
+    try {
+      // Authenticate the database connection
+      await db.sequelize.authenticate();
 
-    await umzug.down({ to: 0 });
-    await umzug.up();
+      // Set up Umzug for handling migrations
+      const umzug = new Umzug({
+        migrations: { glob: 'src/migrations/*.js' },
+        storage: new SequelizeStorage({ sequelize: db.sequelize }),
+        context: db.sequelize.getQueryInterface(),
+      });
+
+      // Roll back all migrations and reapply them to ensure a clean state
+      await umzug.down({ to: 0 });
+      await umzug.up();
+    } catch (error) {
+      console.error('Error during beforeAll setup:', error);
+      throw error;
+    }
   });
 
   beforeEach(async () => {
-    await db.User.destroy({ where: { email: 'test@example.com' } });
+    try {
+      await db.User.destroy({ where: { email: 'test@example.com' } });
 
-    // Set up a user with a mock hashed password
-    user = await db.User.create({
-      email: 'test@example.com',
-      password: 'hashed_OldPassword123', // This simulates the hashed password
-      firstName: 'John',
-      lastName: 'Doe',
-    });
+      // Set up a user with a mock hashed password
+      user = await db.User.create({
+        email: 'test@example.com',
+        password: 'hashed_OldPassword123', // This simulates the hashed password
+        firstName: 'John',
+        lastName: 'Doe',
+      });
 
-    authToken = await Authenticate.generateToken(user);
+      authToken = await Authenticate.generateToken(user);
+    } catch (error) {
+      console.error('Error in beforeEach user setup:', error);
+      throw error;
+    }
   });
 
   afterEach(async () => {
