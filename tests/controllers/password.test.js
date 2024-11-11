@@ -19,38 +19,17 @@ let user;
 describe('PasswordController', () => {
   beforeAll(async () => {
     try {
-      let retryCount = 3;
-      while (retryCount > 0) {
-        try {
-          // Ensure the database connection is live
-          await db.sequelize.authenticate();
-          console.log('Database connection established.');
-          break;
-        } catch (error) {
-          retryCount -= 1;
-          if (retryCount === 0) throw error;
-          console.warn(`Retrying database connection... (${3 - retryCount}/3)`);
-          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait before retrying
-        }
-      }
-
+      await db.sequelize.authenticate();
       const umzug = new Umzug({
         migrations: { glob: 'src/migrations/*.js' },
         storage: new SequelizeStorage({ sequelize: db.sequelize }),
         context: db.sequelize.getQueryInterface(),
       });
-
       await umzug.down({ to: 0 });
       await umzug.up();
-      console.log('Migrations applied successfully.');
 
-      // Confirm the Users table exists after migrations
-      const tables = await db.sequelize.query("SHOW TABLES LIKE 'Users';");
-      if (tables[0].length === 0) {
-        throw new Error("Users table not found after migrations.");
-      }
-      console.log('Users table confirmed.');
-
+      // Cleanup in case any users exist from previous runs
+      await db.User.destroy({ where: { email: 'test@example.com' } });
     } catch (error) {
       console.error('Error during beforeAll setup:', error);
       throw error;
@@ -58,52 +37,66 @@ describe('PasswordController', () => {
   });
 
   beforeEach(async () => {
-    try {
-      await db.sequelize.authenticate(); // Ensure the connection is live
-      await db.User.destroy({ where: { email: 'test@example.com' } });
+    let retryCount = 3;
+    const backoffDelay = 1000; // Delay in milliseconds between retries
 
-      let retryCount = 3;
+    // Generate a unique email for each test run
+    const uniqueEmail = `test+${Date.now()}@example.com`;
+
+    try {
+      // Ensure the database connection is active
+      await db.sequelize.authenticate();
+      console.log('Database connection verified in beforeEach.');
+
+      // Attempt user creation with retry logic and a unique email
       while (retryCount > 0) {
         try {
+          // Create a test user with a unique email
           user = await db.User.create({
-            email: 'test@example.com',
+            email: uniqueEmail,
             password: 'hashed_OldPassword123',
             firstName: 'John',
             lastName: 'Doe',
           });
-          console.log('Test user created successfully.');
-          break; // Break out if creation is successful
-        } catch (error) {
+
+          // Generate auth token for the test user
+          authToken = await Authenticate.generateToken(user);
+          console.log(`Test user created successfully in beforeEach with email: ${uniqueEmail}`);
+          break; // Exit loop if successful
+
+        } catch (creationError) {
           retryCount -= 1;
-          console.warn(`Retrying user creation... (${3 - retryCount}/3)`);
-          if (retryCount === 0) throw error;
-          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait before retrying
+          console.warn(`User creation failed, retrying... (${3 - retryCount}/3)`);
+
+          if (retryCount === 0) {
+            console.error('User creation failed after 3 attempts:', creationError);
+            throw creationError; // Re-throw after 3 unsuccessful attempts
+          }
+
+          // Wait before retrying
+          await new Promise(resolve => setTimeout(resolve, backoffDelay));
         }
       }
-
-      authToken = await Authenticate.generateToken(user);
-
     } catch (error) {
-      console.error('Error during user creation in beforeEach:', error);
-      throw error;
+      console.error('Error during beforeEach setup:', error);
+      throw error; // Re-throw after logging the error
     }
   });
+
 
   afterEach(async () => {
     try {
       await db.User.destroy({ where: { email: 'test@example.com' } });
-      console.log('Test user cleaned up successfully.');
     } catch (error) {
-      console.error('Error during cleanup in afterEach:', error);
+      console.error('Error during user cleanup in afterEach:', error);
     }
   });
 
   afterAll(async () => {
     try {
       await db.sequelize.close();
-      console.log('Database connection closed.');
     } catch (error) {
-      console.error('Error closing database connection in afterAll:', error);
+      console.error('Error closing the database connection:', error);
     }
   });
 
