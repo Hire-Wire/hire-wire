@@ -19,19 +19,17 @@ let user;
 describe('PasswordController', () => {
   beforeAll(async () => {
     try {
-      // Authenticate the database connection
       await db.sequelize.authenticate();
-
-      // Set up Umzug for handling migrations
       const umzug = new Umzug({
         migrations: { glob: 'src/migrations/*.js' },
         storage: new SequelizeStorage({ sequelize: db.sequelize }),
         context: db.sequelize.getQueryInterface(),
       });
-
-      // Roll back all migrations and reapply them to ensure a clean state
       await umzug.down({ to: 0 });
       await umzug.up();
+
+      // Cleanup in case any users exist from previous runs
+      await db.User.destroy({ where: { email: 'test@example.com' } });
     } catch (error) {
       console.error('Error during beforeAll setup:', error);
       throw error;
@@ -39,29 +37,38 @@ describe('PasswordController', () => {
   });
 
   beforeEach(async () => {
-    user = await db.User.findOne({ where: { email: 'test@example.com' } });
-    if (!user) {
+    try {
       user = await db.User.create({
         email: 'test@example.com',
-        password: 'password123',
+        password: 'hashed_OldPassword123',
         firstName: 'John',
         lastName: 'Doe',
       });
+      authToken = await Authenticate.generateToken(user);
+    } catch (error) {
+      console.error('Error during user creation in beforeEach:', error);
+      throw error;
     }
-    authToken = await Authenticate.generateToken(user);
   });
 
   afterEach(async () => {
-    await db.User.destroy({ where: { email: 'test@example.com' } });
+    try {
+      await db.User.destroy({ where: { email: 'test@example.com' } });
+    } catch (error) {
+      console.error('Error during user cleanup in afterEach:', error);
+    }
   });
 
   afterAll(async () => {
-    await db.sequelize.close();
+    try {
+      await db.sequelize.close();
+    } catch (error) {
+      console.error('Error closing the database connection:', error);
+    }
   });
 
   describe('POST /api/v1/users/change-password/:id', () => {
     test('should change password when old password is correct and new passwords match', async () => {
-      // Spy on bcrypt.compare to return true for the correct old password
       await jest.spyOn(bcrypt, 'compare').mockResolvedValueOnce(true);
 
       const response = await request(app)
@@ -76,11 +83,10 @@ describe('PasswordController', () => {
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveProperty('message', 'Password changed successfully');
 
-      // Check if the password has been updated and is hashed
       const updatedUser = await db.User.findOne({ where: { email: 'test@example.com' } });
-      expect(updatedUser.password).toMatch(/^\$2[abxy]\$.{56}$/); // Check if it's a bcrypt hash
+      expect(updatedUser.password).toMatch(/^\$2[abxy]\$.{56}$/);
 
-      await bcrypt.compare.mockRestore(); // Restore bcrypt.compare after the test
+      bcrypt.compare.mockRestore();
     });
 
     test('should not change password if the new passwords do not match', async () => {
@@ -98,7 +104,6 @@ describe('PasswordController', () => {
     });
 
     test('should not change password with incorrect old password', async () => {
-      // Spy on bcrypt.compare to return false for this test
       await jest.spyOn(bcrypt, 'compare').mockResolvedValueOnce(false);
 
       const response = await request(app)
@@ -113,7 +118,7 @@ describe('PasswordController', () => {
       expect(response.statusCode).toBe(400);
       expect(response.body).toHaveProperty('message', 'Old password is incorrect');
 
-      await bcrypt.compare.mockRestore(); // Restore bcrypt.compare after the test
+      bcrypt.compare.mockRestore();
     });
   });
 });
