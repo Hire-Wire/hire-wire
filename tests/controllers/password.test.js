@@ -43,10 +43,6 @@ describe('PasswordController', () => {
     const backoffDelay = 1000; // Delay in milliseconds between retries
 
     try {
-      // Ensure the database connection is active
-      await db.sequelize.authenticate();
-      console.log('Database connection verified in beforeEach.');
-
       // Attempt user creation with retry logic and a unique email
       while (retryCount > 0) {
         try {
@@ -60,12 +56,10 @@ describe('PasswordController', () => {
 
           // Generate auth token for the test user
           authToken = await Authenticate.generateToken(user);
-          console.log(`Test user created successfully in beforeEach with email: ${uniqueEmail}`);
           break; // Exit loop if successful
 
         } catch (creationError) {
           retryCount -= 1;
-          console.warn(`User creation failed, retrying... (${3 - retryCount}/3)`);
 
           if (retryCount === 0) {
             console.error('User creation failed after 3 attempts:', creationError);
