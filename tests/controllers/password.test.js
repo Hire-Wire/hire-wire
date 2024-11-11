@@ -53,7 +53,7 @@ describe('PasswordController', () => {
   describe('POST /api/v1/users/change-password/:id', () => {
     test('should change password when old password is correct and new passwords match', async () => {
       // Spy on bcrypt.compare to return true for the correct old password
-      jest.spyOn(bcrypt, 'compare').mockResolvedValueOnce(true);
+      await jest.spyOn(bcrypt, 'compare').mockResolvedValueOnce(true);
 
       const response = await request(app)
         .post(`/api/v1/users/change-password/${user.id}`)
@@ -90,7 +90,7 @@ describe('PasswordController', () => {
 
     test('should not change password with incorrect old password', async () => {
       // Spy on bcrypt.compare to return false for this test
-      jest.spyOn(bcrypt, 'compare').mockResolvedValueOnce(false);
+      await jest.spyOn(bcrypt, 'compare').mockResolvedValueOnce(false);
 
       const response = await request(app)
         .post(`/api/v1/users/change-password/${user.id}`)
