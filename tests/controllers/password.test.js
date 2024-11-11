@@ -25,11 +25,12 @@ describe('PasswordController', () => {
         storage: new SequelizeStorage({ sequelize: db.sequelize }),
         context: db.sequelize.getQueryInterface(),
       });
+
       await umzug.down({ to: 0 });
       await umzug.up();
 
-      // Cleanup in case any users exist from previous runs
-      await db.User.destroy({ where: { email: 'test@example.com' } });
+      // Confirm the Users table exists
+      await db.sequelize.query("SHOW TABLES LIKE 'Users';");
     } catch (error) {
       console.error('Error during beforeAll setup:', error);
       throw error;
@@ -38,12 +39,26 @@ describe('PasswordController', () => {
 
   beforeEach(async () => {
     try {
-      user = await db.User.create({
-        email: 'test@example.com',
-        password: 'hashed_OldPassword123',
-        firstName: 'John',
-        lastName: 'Doe',
-      });
+      await db.sequelize.authenticate(); // Ensure the connection is live
+      await db.User.destroy({ where: { email: 'test@example.com' } });
+
+      let retryCount = 3;
+      while (retryCount > 0) {
+        try {
+          user = await db.User.create({
+            email: 'test@example.com',
+            password: 'hashed_OldPassword123',
+            firstName: 'John',
+            lastName: 'Doe',
+          });
+          break; // Break out if creation is successful
+        } catch (error) {
+          retryCount -= 1;
+          if (retryCount === 0) throw error;
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait before retrying
+        }
+      }
+
       authToken = await Authenticate.generateToken(user);
     } catch (error) {
       console.error('Error during user creation in beforeEach:', error);
@@ -52,19 +67,11 @@ describe('PasswordController', () => {
   });
 
   afterEach(async () => {
-    try {
-      await db.User.destroy({ where: { email: 'test@example.com' } });
-    } catch (error) {
-      console.error('Error during user cleanup in afterEach:', error);
-    }
+    await db.User.destroy({ where: { email: 'test@example.com' } });
   });
 
   afterAll(async () => {
-    try {
-      await db.sequelize.close();
-    } catch (error) {
-      console.error('Error closing the database connection:', error);
-    }
+    await db.sequelize.close();
   });
 
   describe('POST /api/v1/users/change-password/:id', () => {
