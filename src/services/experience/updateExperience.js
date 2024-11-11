@@ -11,6 +11,8 @@ class UpdateExperience {
 
   async call() {
     try {
+
+   
       // Step 1: Update the base experience fields
       const [updated] = await Experience.update(this.updatedData, {
         where: { id: this.experienceId, userId: this.userId },
@@ -21,13 +23,25 @@ class UpdateExperience {
       }
 
       // Step 2: Update related Employment or Education details if present in the updatedData
-      if ((this.updatedData.experienceType).toUpperCase() === 'EMPLOYMENT'
-          && this.updatedData.employment) {
-        await this.#updateEmployment(this.updatedData.employment);
-      } else if ((this.updatedData.experienceType).toUpperCase() === 'EDUCATION'
-          && this.updatedData.education) {
-        await this.#updateEducation(this.updatedData.education);
-      }
+      //PREVIOUS CODE 
+      // if ((this.updatedData.experienceType).toUpperCase() === 'EMPLOYMENT'
+      //     && this.updatedData.employment) {
+      //   await this.#updateEmployment(this.updatedData.employment);
+      // } else if ((this.updatedData.experienceType).toUpperCase() === 'EDUCATION'
+      //     && this.updatedData.education) {
+      //   await this.#updateEducation(this.updatedData.education);
+      // }
+
+      //STEVEN EDIT FOR STEP 2
+      const experienceType = this.updatedData.experienceType
+      ? this.updatedData.experienceType.toUpperCase()
+      : null;
+
+    if (experienceType === 'EMPLOYMENT' && this.updatedData.employment) {
+      await this.#updateEmployment(this.updatedData.employment);
+    } else if (experienceType === 'EDUCATION' && this.updatedData.education) {
+      await this.#updateEducation(this.updatedData.education);
+    }
 
       // Step 3: Fetch and return the updated experience with associations
       const updatedExperience = await Experience.findByPk(this.experienceId, {
