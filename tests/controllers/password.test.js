@@ -15,6 +15,7 @@ jest.mock('bcrypt', () => ({
 
 let authToken;
 let user;
+let uniqueEmail;
 
 describe('PasswordController', () => {
   beforeAll(async () => {
@@ -37,11 +38,9 @@ describe('PasswordController', () => {
   });
 
   beforeEach(async () => {
+    uniqueEmail = `test+${Date.now()}@example.com`; // Generate a unique email for each test run
     let retryCount = 3;
     const backoffDelay = 1000; // Delay in milliseconds between retries
-
-    // Generate a unique email for each test run
-    const uniqueEmail = `test+${Date.now()}@example.com`;
 
     try {
       // Ensure the database connection is active
@@ -83,10 +82,9 @@ describe('PasswordController', () => {
     }
   });
 
-
   afterEach(async () => {
     try {
-      await db.User.destroy({ where: { email: 'test@example.com' } });
+      await db.User.destroy({ where: { email: uniqueEmail } });
     } catch (error) {
       console.error('Error during user cleanup in afterEach:', error);
     }
