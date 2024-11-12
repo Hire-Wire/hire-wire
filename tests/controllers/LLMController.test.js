@@ -18,7 +18,16 @@ describe('LLMController', () => {
     jest.clearAllMocks();
 
     // Create a new user before each test
-    const email = `testuser_${Date.now()}@example.com`;
+    const generateUniqueEmail = async () => {
+      // Simulating async email generation process
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(`testuser_${Date.now()}@example.com`);
+        }, 100); // Just simulating a small delay
+      });
+    };
+
+    const email = await generateUniqueEmail();
     testUser = await db.User.create({
       email,
       password: 'password123',
