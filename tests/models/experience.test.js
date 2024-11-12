@@ -5,16 +5,16 @@ describe('Experience Model', () => {
   beforeAll(async () => {
     // Ensure we are using the test environment
     process.env.NODE_ENV = 'test'; // Force NODE_ENV to be 'test'
-    
+
     try {
       // Authenticate the connection with the test database
       await db.sequelize.authenticate();
       console.log('Test Database connection established.');
 
-      //Clean up previous entries before each test 
+      //Clean up previous entries before each test
       await db.User.destroy({where: {}});
       await db.Experience.destroy({where: {}});
-      
+
       // Sync the test database, ensuring it’s fresh before running the tests
       await db.sequelize.sync({ force: true }); // `force: true` will drop and recreate tables
       console.log('Test Database synced successfully.');
@@ -30,10 +30,10 @@ describe('Experience Model', () => {
   });
 
    // Dynamically create unique email addresses for each test
-  const generateUniqueEmail = () => `testuser_${Date.now()}@example.com`;
+  const generateUniqueEmail = async () => `testuser_${Date.now()}@example.com`;
 
   test('should create an Experience instance with valid attributes', async () => {
-    const email = generateUniqueEmail(); // Unique email for each test
+    const email = await generateUniqueEmail(); // Unique email for each test
     const user = await db.User.create({
         email: email,
         password: 'password123',
@@ -54,7 +54,7 @@ describe('Experience Model', () => {
 
   test('should throw an error if experienceType is missing', async () => {
     try {
-        const email = generateUniqueEmail(); // Unique email for each test
+        const email = await generateUniqueEmail(); // Unique email for each test
         const user = await db.User.create({
             email: email,
             password: 'password123',
@@ -73,7 +73,7 @@ describe('Experience Model', () => {
 
   test('should throw an error if organizationName is missing', async () => {
     try {
-        const email = generateUniqueEmail(); // Unique email for each test
+        const email = await generateUniqueEmail(); // Unique email for each test
         const user = await db.User.create({
             email: email,
             password: 'password123',
@@ -92,7 +92,7 @@ describe('Experience Model', () => {
 
   test('should validate that experienceType is either "Education" or "Employment"', async () => {
     try {
-        const email = generateUniqueEmail(); // Unique email for each test
+        const email = await generateUniqueEmail(); // Unique email for each test
         const user = await db.User.create({
             email: email,
             password: 'password123',
@@ -110,7 +110,7 @@ describe('Experience Model', () => {
   });
 
   test('should have associations to Employment and Education models', async () => {
-    const email = generateUniqueEmail(); // Unique email for each test
+    const email = await generateUniqueEmail(); // Unique email for each test
     const user = await db.User.create({
         email: email,
         password: 'password123',
