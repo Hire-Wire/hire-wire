@@ -1,3 +1,5 @@
+'use strict';
+// Create Users Migration
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
@@ -30,18 +32,18 @@ module.exports = {
         allowNull: true,
       },
       jobStatus: {
-        type: Sequelize.STRING,
+        type: Sequelize.ENUM('Employed', 'Unemployed', 'Student'),
         allowNull: true,
       },
       createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: Sequelize.NOW,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
       updatedAt: {
         type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: Sequelize.NOW,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
     });
   },

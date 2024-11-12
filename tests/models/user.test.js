@@ -4,7 +4,14 @@ import db from '../../src/models/index.js';
 
 describe('User Model', () => {
   beforeAll(async () => {
-    await db.sequelize.sync({ force: true });
+    try {
+      await db.sequelize.authenticate();
+      console.log('Database connection established.');
+      await db.sequelize.sync({ force: true });
+      console.log('Database synced successfully.');
+    } catch (error) {
+      console.error('Error during sync:', error);
+    }
   });
 
   afterAll(async () => {
