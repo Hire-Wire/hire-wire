@@ -5,5 +5,5 @@ import JobApplication from './jobapplication.js';
 export default {
   User,
   Experience,
-  JobApplication
+  JobApplication,
 };
