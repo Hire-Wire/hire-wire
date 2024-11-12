@@ -4,17 +4,36 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('Experiences', {
-      id: { type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true, allowNull: false },
+      id: { 
+        type: Sequelize.INTEGER, 
+        autoIncrement: true, 
+        primaryKey: true, 
+        allowNull: false },
       userId: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        references: { model: 'Users', key: 'id' },
+        references: { 
+          model: 'Users', 
+          key: 'id', 
+        },
         onDelete: 'CASCADE',
       },
-      experienceType: { type: Sequelize.ENUM('Education', 'Employment'), allowNull: false },
-      organizationName: { type: Sequelize.STRING, allowNull: false, unique: true },
-      createdAt: Sequelize.DATE,
-      updatedAt: Sequelize.DATE,
+      experienceType: { 
+        type: Sequelize.ENUM('Education', 'Employment'),
+        allowNull: false, 
+      },
+      organizationName: { 
+        type: Sequelize.STRING, 
+        allowNull: false, 
+        },
+      createdAt: {
+        allowNull: false, 
+        type: Sequelize.DATE,
+      },
+      updatedAt: {
+        allowNull: false, 
+        type: Sequelize.DATE,
+      }
     });
   },
 
