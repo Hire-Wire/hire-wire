@@ -14,9 +14,11 @@ describe('Education Model', () => {
     }
   });
 
+  const generateUniqueEmail = async () => `testuser_${Date.now()}@example.com`;
+
   beforeEach(async () => {
     // Create a new user before each test
-    const email = `testuser_${Date.now()}@example.com`;
+    const email = await generateUniqueEmail();
     user = await db.User.create({
       email: email,
       password: 'password123',
