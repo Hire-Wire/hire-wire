@@ -46,8 +46,8 @@ describe('JobApplication Model', () => {
   // Create a user for each test if not already created
   beforeEach(async () => {
     transaction = await db.sequelize.transaction();
-    user = await db.User.findOne({ where: { email: 'test@example.com' } }) ||
-      await db.User.create({ email: 'test@example.com', password: 'password123', firstName: 'John', lastName: 'Doe' });
+    user = await db.User.findOne({ where: { email: 'test@example.com' } })
+      || await db.User.create({ email: 'test@example.com', password: 'password123', firstName: 'John', lastName: 'Doe' });
   });
 
   // Rollback transaction after each test

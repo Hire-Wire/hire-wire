@@ -16,7 +16,16 @@ describe('Education Model', () => {
 
   beforeEach(async () => {
     // Create a new user before each test
-    const email = `testuser_${Date.now()}@example.com`;
+    const generateUniqueEmail = async () => {
+      // Simulating async email generation process
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(`testuser_${Date.now()}@example.com`);
+        }, 100); // Just simulating a small delay
+      });
+    };
+
+    const email = await generateUniqueEmail();
     user = await db.User.create({
       email: email,
       password: 'password123',
@@ -58,7 +67,7 @@ describe('Education Model', () => {
         organizationName: 'University XYZ',
         userId: user.id,
       });
-  
+
       await db.Education.create({
         fieldOfStudy: 'Software Engineering',
         startDate: new Date('2022-09-01'),
@@ -69,7 +78,7 @@ describe('Education Model', () => {
       expect(error.message).toMatch(/degree cannot be null/); // Ensure validation error
     }
   });
-  
+
   test('should throw an error if fieldOfStudy is missing', async () => {
     try {
       const experience = await db.Experience.create({
@@ -77,7 +86,7 @@ describe('Education Model', () => {
         organizationName: 'University XYZ',
         userId: user.id,
       });
-  
+
       await db.Education.create({
         degree: 'M.Eng. Software Engineering',
         startDate: new Date('2023-06-01'),
@@ -88,7 +97,7 @@ describe('Education Model', () => {
       expect(error.message).toMatch(/fieldOfStudy cannot be null/); // Ensure validation error
     }
   });
-  
+
   test('should throw an error if startDate is missing', async () => {
     try {
       const experience = await db.Experience.create({
@@ -96,7 +105,7 @@ describe('Education Model', () => {
         organizationName: 'University XYZ',
         userId: user.id,
       });
-  
+
       await db.Education.create({
         degree: 'B.Sc. Computer Science',
         fieldOfStudy: 'Computer Science',
@@ -107,7 +116,7 @@ describe('Education Model', () => {
       expect(error.message).toMatch(/startDate cannot be null/); // Ensure validation error
     }
   });
-  
+
   test('should throw an error if endDate is before startDate', async () => {
     try {
       const experience = await db.Experience.create({
@@ -115,7 +124,7 @@ describe('Education Model', () => {
         organizationName: 'University XYZ',
         userId: user.id,
       });
-  
+
       await db.Education.create({
         degree: 'B.Sc. Computer Science',
         fieldOfStudy: 'Computer Science',
@@ -135,7 +144,7 @@ describe('Education Model', () => {
       organizationName: 'University XYZ',
       userId: user.id, // Use the created user
     });
-  
+
     const education = await db.Education.create({
       degree: 'B.Sc. Computer Science',
       fieldOfStudy: 'Computer Science',
@@ -143,14 +152,14 @@ describe('Education Model', () => {
       endDate: new Date('2024-06-01'),
       experienceId: experience.id,
     });
-  
+
     // Ensure the education record is correctly associated with the experience
     const associatedExperience = await education.getExperience(); // Using the association defined in the model
     expect(associatedExperience.id).toBe(experience.id);
     expect(associatedExperience.experienceType).toBe('Education');
     expect(associatedExperience.organizationName).toBe('University XYZ');
   });
-  
+
 
   test('should associate Education with User', async () => {
     const experience = await db.Experience.create({
@@ -158,7 +167,7 @@ describe('Education Model', () => {
       organizationName: 'University XYZ',
       userId: user.id, // Use the created user
     });
-  
+
     const education = await db.Education.create({
       degree: 'B.Sc. Computer Science',
       fieldOfStudy: 'Computer Science',
@@ -166,19 +175,19 @@ describe('Education Model', () => {
       endDate: new Date('2024-06-01'),
       experienceId: experience.id,
     });
-  
+
     // Ensure the education record is correctly associated with the experience
     const associatedExperience = await education.getExperience(); // Get the associated experience
     expect(associatedExperience.id).toBe(experience.id);
     expect(associatedExperience.experienceType).toBe('Education');
     expect(associatedExperience.organizationName).toBe('University XYZ');
-  
+
     // Now get the associated user from the experience
     const associatedUser = await associatedExperience.getUser(); // Using the correct association method on the Experience model
     expect(associatedUser.id).toBe(user.id);
     expect(associatedUser.email).toBe(user.email);
   });
-  
+
   test('should throw an error if experienceId is invalid or null', async () => {
     try {
       await db.Education.create({
@@ -190,9 +199,9 @@ describe('Education Model', () => {
       });
     } catch (error) {
       expect(error.name).toBe('SequelizeDatabaseError');
-      expect(error.message).toMatch(/Column 'experienceId' cannot be null/); 
+      expect(error.message).toMatch(/Column 'experienceId' cannot be null/);
     }
   });
-  
+
 
 });
