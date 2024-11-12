@@ -4,6 +4,8 @@ import { validationResult } from 'express-validator';
 import db from '../models/index.js';
 import CreateExperience from '../services/experience/createExperience.js';
 import UpdateExperience from '../services/experience/updateExperience.js';
+import DeleteExperience from '../services/experience/deleteExperience.js';
+import { or } from 'sequelize';
 
 const { Experience, Employment, Education, User } = db;
 
@@ -11,11 +13,33 @@ class ExperienceController {
   async create(req, res) {
     // Validate the request
     const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ success: false, errors: errors.array() });
+    // Collect errors from express-validator and manual validation
+    let validationErrors = errors.array();
+
+    // Manually validate experienceType and organizationName
+    const { experienceType, organizationName } = req.body;
+
+    if (!experienceType || typeof experienceType !== 'string' || experienceType.trim() === '') {
+      validationErrors.push({
+        param: 'experienceType',
+        msg: 'experienceType is required and must be a non-empty string.',
+      });
+    }
+
+    if (!organizationName || typeof organizationName !== 'string' || organizationName.trim() === '') {
+      validationErrors.push({
+        param: 'organizationName',
+        msg: 'organizationName is required and must be a non-empty string.',
+      });
+    }
+
+    // If there are validation errors, return 400 with the errors
+    if (validationErrors.length > 0) {
+      return res.status(400).json({ success: false, errors: validationErrors });
     }
 
     try {
+    
       // Delegate creation to the service layer
       const experience = await new CreateExperience(req.body, req.user.id).call();
 
@@ -74,47 +98,82 @@ class ExperienceController {
     const userId = req.user.id; // Assume user ID is available from authentication middleware
     const updatedData = req.body;
 
+ 
     const updateService = new UpdateExperience(id, userId, updatedData);
-    const result = await updateService.call();
+    try {
+      const result = await updateService.call();
 
-    if (!result.success) {
-      return res.status(404).json({ error: result.error });
+      if (!result.success) {
+        return res.status(404).json({ error: result.error });
+      }
+  
+      return res.status(200).json({
+        success: true,
+        message: result.message,
+        updatedExperience: result.updatedExperience,
+      });
+    } catch (error){
+
+          // Check for specific error message and return a 404 if it's "Experience not found"
+      if (error.message === 'Experience not found') {
+        return res.status(404).json({
+          success: false,
+          error: error.message,
+        });
+      }
+      // If there's an exception thrown by the service, catch it and respond with 500
+      return res.status(500).json({ message: 'Failed to update experience' });
     }
-
-    return res.status(200).json({
-      success: true,
-      message: result.message,
-      updatedExperience: result.updatedExperience,
-    });
+    
   }
 
   async remove(req, res) {
     const { experienceId } = req.params;
+    const userId = req.user.id;
+   
 
     try {
-      const user = await User.findByPk(this.userId);
+      const user = await User.findByPk(userId);
       if (!user) { throw new Error('User not found'); }
 
-      const deleted = await Experience.destroy({
-        where: { id: experienceId, userId: user.id },
-      });
+      const deleteService = new DeleteExperience(experienceId, user.id);
+      const result = await deleteService.call();
 
-      if (deleted) {
-        return res.status(204).send();
+
+      if (result.success) {
+        return res.status(204).send(); // Successfully deleted
       }
 
+         // If it's a "not found" error from the delete service, return 404
+    if (result.error === 'Experience not found') {
       return res.status(404).json({
         success: false,
-        message: 'Experience not found',
-      });
-    } catch (error) {
-      return res.status(500).json({
-        success: false,
-        message: 'Failed to delete experience',
-        error: error.message,
+        message: result.error,
       });
     }
-  };
-}
+
+    // If any other error occurs, return 500
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to delete experience',
+      error: result.error || 'Unknown error',
+    });
+    } 
+    catch (error) {
+      if (error.message === 'User not found') {
+        return res.status(404).json({
+          success: false,
+          message: error.message,
+        });
+      }
+
+      return res.status(500).json({
+        success: false, 
+        message: 'Failed to delete experience', 
+        error: error.message, 
+      });
+     }
+    }
+  }
 
 export default new ExperienceController();
