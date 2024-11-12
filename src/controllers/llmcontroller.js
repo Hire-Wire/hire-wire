@@ -1,24 +1,18 @@
 // Import necessary controllers and services
-import controllers from './index.js';
+import User from '../models/user.js';
+import Experience from '../models/experience.js';
 import LlmService from '../services/llm/llmservice.js';
+import createJobApplication from '../services/jobapplication/createJobApplication.js';
+import addDocumentToJobApplication from '../services/jobapplication/addDocumentToJobApplication.js';
 
-const {
-  User,
-  Experience,
-  JobApplication,
-} = controllers;
+const userController = User;
+const experienceController = Experience;
 
 class LLMController {
-  constructor() {
-    this.userController = User;
-    this.experienceController = Experience;
-    this.jobAppController = JobApplication;
-  }
-
   async fetchRequiredData(userId) {
     // Fetch user details and experiences
-    const userDetails = await this.userController.view({ params: { id: userId } });
-    const userExperiences = await this.experienceController.getAll({ user: { id: userId } });
+    const userDetails = await userController.view({ params: { id: userId } });
+    const userExperiences = await experienceController.getAll({ user: { id: userId } });
     return { userDetails, userExperiences };
   }
 
@@ -84,19 +78,12 @@ class LLMController {
   }
 
   async processJobApplicationCreation(userId, jobTitle, jobCompany, jobDescriptionBody) {
-    const createJobReq = {
-      user: { id: userId },
-      body: {
-        jobAppTitle: jobTitle,
-        jobAppCompany: jobCompany,
-        jobAppDescription: jobDescriptionBody,
-      },
-    };
-    const res = await this.jobAppController.createJobApplication(createJobReq);
-    if (!res || !res.jobApplication || !res.jobApplication.id) {
-      throw new Error('Job application could not be processed.');
-    }
-    return res.jobApplication.id;
+    return await createJobApplication.createJobApplication(
+      userId,
+      jobTitle,
+      jobCompany,
+      jobDescriptionBody
+    );
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -113,14 +100,12 @@ class LLMController {
   }
 
   async addDocumentToJobApp(jobAppId, docType, docBody, userId) {
-    const req = {
-      params: { id: jobAppId },
-      body: { docType, docBody },
-      user: { id: userId },
-    };
-    const res = await this.jobAppController.addDocument(req);
-    if (res.statusCode !== 200) throw new Error(`Failed to add ${docType} to the job application.`);
-    return res.data;
+    return await addDocumentToJobApplication.addDocumentToJobApplication(
+      jobAppId,
+      docType,
+      docBody,
+      userId
+    );
   }
 
   async generateContent(req, res) {
