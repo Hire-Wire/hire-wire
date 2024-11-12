@@ -9,8 +9,12 @@ dotenv.config();
 const apiKey = process.env.OPENAI_API_KEY;
 console.log('API Key Loaded:', apiKey ? 'Yes' : 'No');
 
-class LlmService {
-  static async callChatGPT(prompt) {
+class LLMGenerationService {
+  constructor(prompt) {
+    this.prompt = prompt;
+  }
+
+  async callChatGPT() {
     const url = 'https://api.openai.com/v1/chat/completions';
     const headers = {
       'Content-Type': 'application/json',
@@ -21,7 +25,7 @@ class LlmService {
       model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: systemPrompt + sampleUserPrompt },
-        { role: 'user', content: prompt },
+        { role: 'user', content: this.prompt },
       ],
     };
 
@@ -43,4 +47,4 @@ class LlmService {
   }
 }
 
-export default LlmService;
+export default LLMGenerationService;
