@@ -113,9 +113,16 @@ class ExperienceController {
         updatedExperience: result.updatedExperience,
       });
     } catch (error){
-         // If there's an exception thrown by the service, catch it and respond with 500
-         console.error('Error during experience update:', error);
-         return res.status(500).json({ message: 'Failed to update experience' });
+
+          // Check for specific error message and return a 404 if it's "Experience not found"
+      if (error.message === 'Experience not found') {
+        return res.status(404).json({
+          success: false,
+          error: error.message,
+        });
+      }
+      // If there's an exception thrown by the service, catch it and respond with 500
+      return res.status(500).json({ message: 'Failed to update experience' });
     }
     
   }
@@ -129,20 +136,6 @@ class ExperienceController {
       const user = await User.findByPk(userId);
       if (!user) { throw new Error('User not found'); }
 
-///
-       // Find the experience by ID and userId
-    const experience = await Experience.findByPk(experienceId);
-
-     console.log('Experience found:', experience); // debug 
-
-    if (!experience) {
-      return res.status(404).json({
-        success: false,
-        message: 'Experience not found',
-      });
-    }
-    ///
-
       const deleteService = new DeleteExperience(experienceId, user.id);
       const result = await deleteService.call();
 
@@ -151,12 +144,29 @@ class ExperienceController {
         return res.status(204).send(); // Successfully deleted
       }
 
+         // If it's a "not found" error from the delete service, return 404
+    if (result.error === 'Experience not found') {
       return res.status(404).json({
-        success: false, 
-        message: 'Experience not found', 
+        success: false,
+        message: result.error,
       });
+    }
+
+    // If any other error occurs, return 500
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to delete experience',
+      error: result.error || 'Unknown error',
+    });
     } 
     catch (error) {
+      if (error.message === 'User not found') {
+        return res.status(404).json({
+          success: false,
+          message: error.message,
+        });
+      }
+
       return res.status(500).json({
         success: false, 
         message: 'Failed to delete experience', 

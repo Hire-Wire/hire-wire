@@ -31,15 +31,27 @@ class DeleteExperience {
       }
 
       // Step 3: Delete the base Experience record
-      await Experience.destroy({
+      // await Experience.destroy({
+      //   where: { id: this.experienceId, userId: this.userId },
+      // });
+
+      // Step 3: Delete the base Experience record
+      const deleteResult = await Experience.destroy({
         where: { id: this.experienceId, userId: this.userId },
       });
+
+      // If the deletion fails, throw an error to be caught by the controller
+      if (deleteResult === 0) {
+        throw new Error('Failed to delete experience');
+}
+
 
       return { success: true, message: 'Experience deleted successfully' };
     } catch (e) {
       return { success: false, error: e.message };
     }
   }
+
 }
 
 export default DeleteExperience;

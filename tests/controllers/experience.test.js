@@ -1,11 +1,4 @@
 import { jest } from '@jest/globals';
-import request from 'supertest';
-import app from '../../server.js';
-import bcrypt from 'bcrypt';
-import db from '../../src/models/index.js';
-import Authenticate from '../../src/utils/Authenticate.js';
-import CreateExperience from '../../src/services/experience/createExperience.js';
-import UpdateExperience from '../../src/services/experience/updateExperience.js';
 
 jest.mock('../../src/services/experience/createExperience.js', () => ({
   __esModule: true,
@@ -54,8 +47,30 @@ jest.mock('../../src/services/experience/deleteExperience.js', () => ({
 }));
 
 // Mock models
-jest.mock('../../src/models/index.js');
+jest.mock('../../src/models/index.js', () => ({
+  Experience: {
+    findOne: jest.fn(),
+    findByPk: jest.fn(),
+    create: jest.fn(), 
+    update: jest.fn(), 
+    destroy: jest.fn(),
+    findAll: jest.fn(),
+  },
+  Employment: {
+    findByPk: jest.fn(),
+    create: jest.fn(), 
+    update: jest.fn(), 
+    destroy: jest.fn(),
+  }
+}));
+
 jest.mock('../../src/utils/Authenticate.js');
+
+import request from 'supertest';
+import app from '../../server.js';
+import db from '../../src/models/index.js';
+import Authenticate from '../../src/utils/Authenticate.js';
+import CreateExperience from '../../src/services/experience/createExperience.js';
 
 const { Experience, User, Employment } = db;
 
@@ -101,46 +116,19 @@ describe('ExperienceController', () => {
         startDate: "2023-01-1",
       },
     };
-///
-    //   // Reset all mocks before each test
-    // jest.clearAllMocks(); 
-    // // Dynamic mocks that might vary between tests, reset here
-    // Experience.findAll = jest.fn();
-    // Experience.findByPk = jest.fn().mockResolvedValue(testExperience);
-    // Experience.create = jest.fn().mockResolvedValue(testExperience);
-    // Experience.update = jest.fn().mockResolvedValue([1]); // Indicates successful update
-    // // // Mock the return value after the update operation
-    // const updatedExperienceData = {
-    //   ...testExperience,
-    //   organizationName: 'Updated Company', // Updated company name
-    // };
-    // Experience.findByPk.mockResolvedValueOnce(updatedExperienceData); // Mock after update
-    // Experience.findByPk.mockResolvedValueOnce(null);  // Mock for 404 scenario (experience not found)
-   
-    // Employment.create = jest.fn().mockResolvedValue(testExperience);
-
-    // Employment.findByPk = jest.fn().mockResolvedValue(testExperience);
-    // Experience.destroy = jest.fn().mockResolvedValue(1);  // This ensures deletion is successful (returns 1)
-    // Employment.destroy = jest.fn().mockResolvedValue(1);
-    // Experience.findByPk.mockResolvedValueOnce(null);  
-///
-
       // Reset all mocks before each test
       jest.clearAllMocks(); 
 
       Experience.findAll = jest.fn();
+      Experience.findOne = jest.fn();
       Experience.findByPk = jest.fn()
       Experience.create = jest.fn()
       Experience.update = jest.fn()
       Experience.destroy = jest.fn()
-
       Employment.create = jest.fn()
       Employment.findByPk = jest.fn()
       Employment.update = jest.fn()
       Employment.destroy = jest.fn()
-
-
-
     // Set up dynamic mocks for services to ensure clean behavior each test
     mockCreateExperienceServiceInstance = {
       call: jest.fn().mockResolvedValue({
@@ -293,49 +281,37 @@ describe('ExperienceController', () => {
     });
 
 
-    // it('should handle server errors gracefully during update', async () => {
-    //   Experience.findByPk.mockResolvedValue(testExperience);
-    //   Experience.update.mockRejectedValue(new Error('Something went wrong'));
-    // //  mockUpdateExperienceServiceInstance.call.mockRejectedValueOnce(new Error('Something went wrong'));
+    it('should handle server errors gracefully during update', async () => { 
+      const error = new Error('Failed to update experience');
+      error.statusCode = 500;
+      Experience.findByPk.mockResolvedValue(testExperience);
+      Experience.update.mockRejectedValue(error);
 
-    //   const res = await request(app)
-    //     .put(`/api/v1/experiences/${testExperience.id}`)
-    //     .set('Authorization', `Bearer ${authToken}`)
-    //     .send({ organizationName: 'Updated Company' });
-
-    //   console.log(res.body); //remove after  
-
-    //   expect(res.statusCode).toBe(500);
-    //   expect(res.body).toHaveProperty('message', 'Failed to update experience');
-    // });
+      const res = await request(app)
+        .put(`/api/v1/experiences/${testExperience.id}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ organizationName: 'Updated Company' });
+        
+      expect(res.statusCode).toBe(500);
+      expect(res.body).toHaveProperty('message', 'Failed to update experience');
+    });
   });
 
   describe('DELETE /api/v1/experiences/:experienceId', () => {
     it('should delete an experience', async () => {
-      console.log('Setting up mocks...');
-      Experience.findByPk.mockResolvedValueOnce(testExperience);
-      const experience = await Experience.findByPk(testExperience.id);
-
-      console.log('Mocks set:', Experience.findByPk.mock.calls); // Log m
-      
+      Experience.findOne.mockResolvedValueOnce(testExperience); 
       Experience.destroy.mockResolvedValueOnce(1);
       Employment.destroy.mockResolvedValueOnce(1);
-
-   
-
-    console.log('Before API Call');
+    
       const res = await request(app)
         .delete(`/api/v1/experiences/${testExperience.id}`)
         .set('Authorization', `Bearer ${authToken}`);
 
-      console.log('Response Status:', res.statusCode);
-      console.log('Response Body:', res.body); // Log the response to inspect the output
       expect(res.statusCode).toBe(204);
     })
     
 
     it('should handle experience not found error', async () => {
-     
       Experience.findByPk.mockResolvedValueOnce(null);
       Experience.destroy.mockResolvedValueOnce(0);
 
@@ -348,21 +324,20 @@ describe('ExperienceController', () => {
     });
 
 
-    //  it('should handle server errors gracefully during deletion', async () => {
-    //   // Mock `findByPk` to return a valid experience
-    //   Experience.findByPk.mockResolvedValue(testExperience);
+     it('should handle server errors gracefully during deletion', async () => {
+        // Mock `findByPk` to return a valid experience
+      Experience.findOne.mockResolvedValueOnce(testExperience); 
+      const error = new Error('Failed to delete experience');
+      error.statusCode = 500;
+      // Simulate a failure in `destroy` method by rejecting the promise
+      Experience.destroy.mockRejectedValueOnce(error);
+      
+      const res = await request(app)
+        .delete(`/api/v1/experiences/${testExperience.id}`)
+        .set('Authorization', `Bearer ${authToken}`);
 
-    //   // Simulate a failure in `destroy` method by rejecting the promise
-    //   Experience.destroy.mockRejectedValueOnce(new Error('Failed to delete'));
-
-    //   const res = await request(app)
-    //     .delete(`/api/v1/experiences/${testExperience.id}`)
-    //     .set('Authorization', `Bearer ${authToken}`);
-
-    //   console.log(res.body); //remove after
-
-    //   expect(res.statusCode).toBe(500);
-    //   expect(res.body).toHaveProperty('message', 'Failed to delete experience');
-    // });
+      expect(res.statusCode).toBe(500);
+      expect(res.body).toHaveProperty('message', 'Failed to delete experience');
+    });
   });
 });
