@@ -1,4 +1,5 @@
 // experience.test.js
+import { Umzug, SequelizeStorage } from 'umzug';
 import db from '../../src/models/index.js'; // Your sequelize models and connection
 
 describe('Experience Model', () => {
@@ -21,6 +22,14 @@ describe('Experience Model', () => {
     } catch (error) {
       console.error('Error during test DB sync:', error);
     }
+
+    // Run migrations
+    const umzug = new Umzug({
+      migrations: { glob: 'src/migrations/*.js' },
+      storage: new SequelizeStorage({ sequelize: db.sequelize }),
+      context: db.sequelize.getQueryInterface(),
+    });
+    await umzug.up();
   });
 
   afterAll(async () => {

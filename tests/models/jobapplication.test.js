@@ -24,6 +24,7 @@ describe('JobApplication Model', () => {
   beforeAll(async () => {
     try {
       await db.sequelize.authenticate();
+      await db.sequelize.sync({ force: true });
     } catch (connectionError) {
       throw new Error('Database connection error:', connectionError);
     }
@@ -46,8 +47,8 @@ describe('JobApplication Model', () => {
   // Create a user for each test if not already created
   beforeEach(async () => {
     transaction = await db.sequelize.transaction();
-    user = await db.User.findOne({ where: { email: 'test@example.com' } }) ||
-      await db.User.create({ email: 'test@example.com', password: 'password123', firstName: 'John', lastName: 'Doe' });
+    user = await db.User.findOne({ where: { email: 'test@example.com' } })
+      || await db.User.create({ email: 'test@example.com', password: 'password123', firstName: 'John', lastName: 'Doe' });
   });
 
   // Rollback transaction after each test
