@@ -29,9 +29,10 @@ class UserController {
       // Generate JWT token
       const token = Authenticate.generateToken(user);
 
-      // Return success response with token
+      // Return success response with token and userID
       return res.status(201).json({
         message: 'Signup successful',
+        userID: user.id, // Include userID in the response
         userData: user.filterDetails(),
         token,
       });
@@ -66,9 +67,10 @@ class UserController {
       // Generate JWT token
       const token = Authenticate.generateToken(user);
 
-      // Return success response
+      // Return success response with userID included
       return res.status(200).json({
         message: 'Login successful',
+        userID: user.id, // Include userID in response
         userData: user.filterDetails(),
         token,
       });

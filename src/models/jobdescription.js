@@ -39,7 +39,7 @@ export default (sequelize) => {
       allowNull: true,
       validate: {
         len: {
-          args: [0, 1000],
+          args: [0, 5000],
           msg: 'Job description should not exceed 1000 characters',
         },
       },
