@@ -4,9 +4,9 @@ import LLMGenerationService from '../services/llm/LLMGenerationService.js';
 import LLMResponseProcessingService from '../services/llm/LLMResponseProcessingService.js';
 import LLMRequestBuilderService from '../services/llm/LLMRequestBuilderService.js';
 import JobApplicationCreationService from
-  '../services/jobapplication/jobApplicationCreationService.js';
+    '../services/jobapplication/jobApplicationCreationService.js';
 import AttachDocumentToJobApplicationService from
-  '../services/jobapplication/attachDocumentToJobApplicationService.js';
+    '../services/jobapplication/attachDocumentToJobApplicationService.js';
 
 class LLMController {
   generateContent = async (req, res) => {
@@ -37,7 +37,6 @@ class LLMController {
         userId,
         jobDescriptionInfo
       ).call();
-
       const jobAppId = createdJobDescription.jobApplicationId;
 
       // Step 2: Prepare LLM Request Data
@@ -45,8 +44,7 @@ class LLMController {
         userId,
         createdJobDescription,
         customPrompt
-      )
-        .call();
+      ).call();
 
       // Step 3: Call LLM Service
       const chatGPTResponse = await new LLMGenerationService(llmRequestData).callChatGPT();
@@ -61,15 +59,13 @@ class LLMController {
           'Resume',
           resume,
           userId
-        )
-          .call(),
+        ).call(),
         new AttachDocumentToJobApplicationService(
           jobAppId,
           'Cover Letter',
           coverLetter,
           userId
-        )
-          .call(),
+        ).call(),
       ]);
 
       return res.status(200).json({
