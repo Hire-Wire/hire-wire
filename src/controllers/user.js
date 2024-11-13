@@ -23,11 +23,8 @@ class UserController {
         return res.status(409).json({ message: 'Email already exists' });
       }
 
-      // Hash the password before saving
-      const hashedPassword = await bcrypt.hash(password, 10);
-
       // Create new user
-      const user = await User.create({ email, password: hashedPassword, firstName, lastName });
+      const user = await User.create({ email, password, firstName, lastName });
 
       // Generate JWT token
       const token = Authenticate.generateToken(user);
@@ -61,7 +58,7 @@ class UserController {
       }
 
       // Verify the password
-      const passwordMatch = await bcrypt.compare(password, user.password);
+      const passwordMatch = await user.validatePassword(password);
       if (!passwordMatch) {
         return res.status(400).json({ message: 'Wrong password, please try again' });
       }
@@ -85,17 +82,12 @@ class UserController {
     res.json({ message: 'Logout successful' });
   }
 
-  async viewByEmail(req, res) {
+  async view(req, res) {
     try {
-      const email = req.params.email;
-      // console.log(`viewByEmail called with email: ${email}`);
-
-      // Ensure the requesting user is accessing their own profile
-      if (req.user.email !== email) {
+      if (req.user.id !== parseInt(req.params.id, 10)) {
         return res.status(403).json({ message: 'Access denied' });
       }
-
-      const user = await User.findOne({ where: { email } });
+      const user = await User.findByPk(req.params.id);
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
@@ -105,7 +97,7 @@ class UserController {
     }
   }
 
-  async updateByEmail(req, res) {
+  async update(req, res) {
     // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -113,21 +105,21 @@ class UserController {
     }
 
     try {
-      const email = req.params.email;
+      const userId = parseInt(req.params.id, 10);
 
-      // Ensure the requesting user is updating their own profile
-      if (req.user.email !== email) {
+      // Check that user is updating their own profile
+      if (isNaN(userId) || req.user.id !== userId) {
         return res.status(403).json({ message: 'You can only update your own profile' });
       }
 
-      const user = await User.findOne({ where: { email } });
+      const user = await User.findByPk(userId);
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
 
       // Check if old password is correct if updating password
       if (req.body.oldPassword) {
-        const passwordMatch = await bcrypt.compare(req.body.oldPassword, user.password);
+        const passwordMatch = bcrypt.compareSync(req.body.oldPassword, user.password);
         if (!passwordMatch) {
           return res.status(400).json({ message: 'Old password is incorrect' });
         }
@@ -135,8 +127,6 @@ class UserController {
           return res.status(400)
             .json({ message: 'New password must be different from the old password' });
         }
-        // Hash the new password
-        req.body.password = await bcrypt.hash(req.body.password, 10);
       }
 
       // Check if email already exists in the system
@@ -151,7 +141,7 @@ class UserController {
       const updatedUser = await user.update(req.body);
 
       // Generate a new token if email or password is changed
-      const token = Authenticate.generateToken(updatedUser);
+      const token = Authenticate.generateToken(user);
 
       // Return updated user data without sensitive info
       return res.status(200).json({
@@ -167,16 +157,12 @@ class UserController {
     }
   }
 
-  async removeByEmail(req, res) {
+  async remove(req, res) {
     try {
-      const email = req.params.email;
-
-      // Ensure the requesting user is deleting their own profile
-      if (req.user.email !== email) {
+      if (req.user.id !== parseInt(req.params.id, 10)) {
         return res.status(403).json({ message: 'Access denied' });
       }
-
-      const user = await User.findOne({ where: { email } });
+      const user = await User.findByPk(req.params.id);
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
