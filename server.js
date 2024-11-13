@@ -18,6 +18,7 @@ const port = process.env.PORT || 8000;
 // Middleware Setup
 app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:8000',
+  methods: 'GET,POST,PUT,DELETE',
   credentials: true,
 }));
 
