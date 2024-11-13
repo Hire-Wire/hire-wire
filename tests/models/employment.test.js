@@ -14,10 +14,17 @@ describe('Employment Model', () => {
     }
   });
 
-  const generateUniqueEmail = async () => `testuser_${Date.now()}@example.com`;
-
   beforeEach(async () => {
     // Create a new user before each test
+    const generateUniqueEmail = async () => {
+      // Simulating async email generation process
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(`testuser_${Date.now()}@example.com`);
+        }, 100); // Just simulating a small delay
+      });
+    };
+
     const email = await generateUniqueEmail();
     user = await db.User.create({
       email: email,
@@ -60,7 +67,7 @@ describe('Employment Model', () => {
         organizationName: 'Company XYZ',
         userId: user.id,
       });
-  
+
       await db.Employment.create({
         startDate: new Date('2022-06-01'),
         endDate: new Date('2026-06-01'),
@@ -80,7 +87,7 @@ describe('Employment Model', () => {
         organizationName: 'Company XYZ',
         userId: user.id,
       });
-  
+
       await db.Employment.create({
         jobTitle: 'Software Engineer',
         jobDescription: 'Developing software applications',
