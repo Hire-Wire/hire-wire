@@ -35,7 +35,6 @@ class JobApplicationCreationService {
       });
 
       // Step 5: Associate JobDescription with JobApplication
-      // Manual update if setJobDescription is not available
       await createdJobDescription.update({ jobApplicationId: createdJobApplication.id });
 
       return createdJobDescription; // Return the created job description

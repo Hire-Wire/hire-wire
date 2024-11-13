@@ -10,7 +10,8 @@ class LLMRequestBuilderService {
   async call() {
     try {
       const { userDetails, userExperiences } = await this.#fetchRequiredData();
-      return this.#structureLLMRequest(userDetails, userExperiences);
+      const requestData = this.#structureLLMRequest(userDetails, userExperiences);
+      return requestData;
     } catch (error) {
       throw new Error(`Failed to prepare LLM request data: ${error.message}`);
     }
@@ -32,7 +33,7 @@ class LLMRequestBuilderService {
     // Ensure experiences is an array before using .filter() and .map()
     const validExperiences = Array.isArray(experiences) ? experiences : [];
 
-    return {
+    const structuredData = {
       user: {
         userID: user.id,
         firstName: user.firstName,
@@ -55,7 +56,7 @@ class LLMRequestBuilderService {
         .map(edu => ({
           educationID: edu.id,
           institutionName: edu.organizationName,
-          degree: edu.Education?.[0]?.degree || 'N/A', // Use optional chaining and fallback
+          degree: edu.Education?.[0]?.degree || 'N/A',
           startYear: edu.startDate ? new Date(edu.startDate).getFullYear() : null,
           endYear: edu.endDate ? new Date(edu.endDate).getFullYear() : null,
         })),
@@ -65,6 +66,8 @@ class LLMRequestBuilderService {
         rawText: true,
       },
     };
+
+    return structuredData;
   }
 }
 
