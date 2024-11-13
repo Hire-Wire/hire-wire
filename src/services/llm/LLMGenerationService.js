@@ -53,9 +53,9 @@ class LLMGenerationService {
 
   handleError(error) {
     if (error.response) {
-      console.error('Error calling ChatGPT API:', JSON.stringify(error.response.data, null, 2));
+      throw new Error(`Error calling ChatGPT API: ${JSON.stringify(error.response.data)}`);
     } else {
-      console.error('Error:', error.message);
+      throw new Error(error.message);
     }
   }
 }
