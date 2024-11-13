@@ -84,10 +84,13 @@ class UserController {
 
   async view(req, res) {
     try {
-      if (req.user.id !== parseInt(req.params.id, 10)) {
-        return res.status(403).json({ message: 'Access denied' });
-      }
-      const user = await User.findByPk(req.params.id);
+      // TODO: @lana: please change the rest of the backend to use email base instead of user ID. provided working example as follows :
+      // if (req.user.id !== parseInt(req.params.id, 10)) {
+      //   return res.status(403).json({ message: 'Access denied' });
+      // }
+      const email = req.params.email; 
+      // const user = await User.findByPk(req.params.id);
+      const user = await User.findOne({ where: { email } });
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
