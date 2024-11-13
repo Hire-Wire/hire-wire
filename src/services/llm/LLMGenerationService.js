@@ -7,16 +7,11 @@ dotenv.config();
 
 // OpenAI API key
 const apiKey = process.env.OPENAI_API_KEY;
-console.log('API Key Loaded:', apiKey ? 'Yes' : 'No');
 
 class LLMGenerationService {
   constructor(prompt) {
-    // Log the initial prompt value
-    console.log('Original Prompt:', prompt);
-
     // Convert prompt to a string, if needed
     this.prompt = typeof prompt === 'string' ? prompt : JSON.stringify(prompt);
-    console.log('Processed Prompt (as string):', this.prompt);
 
     // Ensure prompt is a string
     if (typeof this.prompt !== 'string') {
@@ -43,9 +38,6 @@ class LLMGenerationService {
         { role: 'user', content: this.prompt },
       ],
     };
-
-    // Log the full request data to inspect before making the API call
-    console.log('Request Data:', JSON.stringify(data, null, 2));
 
     try {
       const response = await axios.post(url, data, { headers });

@@ -63,7 +63,7 @@ describe('UserController', () => {
       expect(res.body).toHaveProperty('token', authToken);
 
       authToken = res.body.token;
-      userId = res.body.userID;
+      userId = res.body.userData.id;
     });
 
     it('should not create a user with an existing email', async () => {
