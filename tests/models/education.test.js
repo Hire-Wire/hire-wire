@@ -1,3 +1,4 @@
+import { Umzug, SequelizeStorage } from 'umzug';
 import db from '../../src/models/index.js'; // Import sequelize models
 
 describe('Education Model', () => {
@@ -12,6 +13,14 @@ describe('Education Model', () => {
     } catch (error) {
       console.error('Error during test DB sync:', error);
     }
+
+    // Run migrations
+    const umzug = new Umzug({
+      migrations: { glob: 'src/migrations/*.js' },
+      storage: new SequelizeStorage({ sequelize: db.sequelize }),
+      context: db.sequelize.getQueryInterface(),
+    });
+    await umzug.up();
   });
 
   beforeEach(async () => {

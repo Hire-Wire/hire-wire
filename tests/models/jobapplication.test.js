@@ -24,6 +24,7 @@ describe('JobApplication Model', () => {
   beforeAll(async () => {
     try {
       await db.sequelize.authenticate();
+      await db.sequelize.sync({ force: true });
     } catch (connectionError) {
       throw new Error('Database connection error:', connectionError);
     }

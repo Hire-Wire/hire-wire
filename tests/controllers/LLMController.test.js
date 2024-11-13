@@ -3,7 +3,6 @@ import request from 'supertest';
 import app from '../../server.js';
 import LLMGenerationService from '../../src/services/llm/LLMGenerationService.js';
 import Authenticate from '../../src/utils/Authenticate.js';
-import LLMResponseProcessingService from '../../src/services/llm/LLMResponseProcessingService.js';
 import db from '../../src/models/index.js';
 
 jest.mock('../../src/services/llm/LLMGenerationService.js', () => ({
@@ -14,6 +13,16 @@ let testUser;
 let authToken;
 
 describe('LLMController', () => {
+  beforeAll(async () => {
+    process.env.NODE_ENV = 'test'; // Force NODE_ENV to be 'test'
+    try {
+      // Authenticate and sync the database
+      await db.sequelize.authenticate();
+    } catch (error) {
+      console.error('Error during test DB sync:', error);
+    }
+  });
+
   beforeEach(async () => {
     jest.clearAllMocks();
 

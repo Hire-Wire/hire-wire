@@ -8,7 +8,7 @@
     "start": "node server.js",
     "lint": "eslint ./server",
     "lint:fix": "eslint --fix ./server",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
     "db:migrate": "sequelize db:migrate",
     "db:setup": "sequelize-cli db:create && npm run db:migrate",
     "db:migrate:test": "NODE_ENV=test sequelize db:migrate:undo:all && NODE_ENV=test sequelize db:migrate",
