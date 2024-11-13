@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '8000:8000'
+    environment:
+      NODE_ENV: production
+      MYSQLHOST: mysql
+      MYSQLUSERNAME: ${MYSQLUSERNAME}
+      MYSQLPASSWORD: ${MYSQLPASSWORD}
+      MYSQLDATABASE: ${MYSQLDATABASE}
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      - mysql
+    command: >
+      sh -c "dockerize -wait tcp://mysql:3306 -timeout 60s -- npx sequelize-cli db:migrate && npm start"
+
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQLPASSWORD}
+      MYSQL_DATABASE: ${MYSQLDATABASE}
+    ports:
+      - '3307:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  mysql_data:
