@@ -14,6 +14,7 @@ class UpdateExperience {
 
    
       // Step 1: Update the base experience fields
+
       const [updated] = await Experience.update(this.updatedData, {
         where: { id: this.experienceId, userId: this.userId },
       });
@@ -38,6 +39,7 @@ class UpdateExperience {
         include: [Employment, Education],
       });
 
+
       return {
         success: true,
         message: 'Experience updated successfully',
@@ -51,16 +53,31 @@ class UpdateExperience {
 
   // Private method to update Employment details
   async #updateEmployment(employmentData) {
-    await Employment.update(employmentData, {
+
+  for (const employment of employmentData) {
+    // Remove experienceId from the data (it is already used in the where clause)
+    const { experienceId, ...updateData } = employment;
+
+    // Update the Employment record
+    await Employment.update(updateData, {
       where: { experienceId: this.experienceId },
-    });
+      });
+    }
   }
+
+  
 
   // Private method to update Education details
   async #updateEducation(educationData) {
-    await Education.update(educationData, {
-      where: { experienceId: this.experienceId },
-    });
+    for (const education of educationData) {
+      // Remove experienceId from the data (it is already used in the where clause)
+      const { experienceId, ...updateData } = education;
+  
+      // Update the Education record
+      await Education.update(updateData, {
+        where: { experienceId: this.experienceId },
+      });
+    }
   }
 }
 

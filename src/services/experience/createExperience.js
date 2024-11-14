@@ -57,11 +57,25 @@ class CreateExperience {
   }
 
   #createEducation(education, experienceId) {
-    return Education.create({ ...education, experienceId });
+    if (Array.isArray(education) && education.length > 0) {
+      // Loop through the education array and create a new Education entry for each item
+      return Promise.all(education.map(edu => 
+        Education.create({ ...edu, experienceId })
+      ));
+    }
+
+    // return Education.create({ ...education, experienceId });
   }
 
   #createEmployment(employment, experienceId) {
-    return Employment.create({ ...employment, experienceId });
+
+    if (Array.isArray(employment) && employment.length > 0) {
+      // Loop through the employment array and create a new Employment entry for each item
+      return Promise.all(employment.map(emp => 
+        Employment.create({ ...emp, experienceId })
+      ));
+    }
+    // return Employment.create({ ...employment, experienceId });
   }
 }
 

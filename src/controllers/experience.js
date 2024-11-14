@@ -19,6 +19,8 @@ class ExperienceController {
     // Manually validate experienceType and organizationName
     const { experienceType, organizationName } = req.body;
 
+    console.log("***Request body:", req.body); 
+
     if (!experienceType || typeof experienceType !== 'string' || experienceType.trim() === '') {
       validationErrors.push({
         param: 'experienceType',
