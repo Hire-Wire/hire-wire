@@ -26,4 +26,4 @@ EXPOSE 8000
 ENV NODE_ENV=production
 
 # Run the application
-CMD ["npm", "start"]
+CMD ["sh", "-c", "npx sequelize-cli db:migrate && npm start"]
