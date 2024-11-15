@@ -32,19 +32,27 @@ export default (sequelize) => {
     },
     experienceId: {
       type: DataTypes.INTEGER,
-      primaryKey: true,
+      allowNull: false,
       references: {
         model: 'Experiences',
         key: 'id',
       },
+      onDelete: 'RESTRICT',
     },
   }, {
     tableName: 'Educations',
     timestamps: true,
+    indexes: [
+      {
+        unique: true,
+        fields: ['degree', 'experienceId'],
+        name: 'unique_degree_per_experience',
+      },
+    ],
   });
 
   Education.associate = (models) => {
-    Education.belongsTo(models.Experience, { foreignKey: 'experienceId' });
+    Education.belongsTo(models.Experience, { foreignKey: 'experienceId', onDelete: 'RESTRICT' });
   };
 
   return Education;

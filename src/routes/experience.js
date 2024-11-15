@@ -16,5 +16,4 @@ export default (app) => {
 
   // Delete a specific experience by ID (handles both Education and Employment experiences)
   app.delete('/api/v1/experiences/:experienceId', auth, experienceController.remove);
-
 };

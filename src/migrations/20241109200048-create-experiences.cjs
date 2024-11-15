@@ -1,39 +1,39 @@
-'use strict';
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('Experiences', {
-      id: { 
-        type: Sequelize.INTEGER, 
-        autoIncrement: true, 
-        primaryKey: true, 
-        allowNull: false },
+      id: {
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+        allowNull: false,
+      },
       userId: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        references: { 
-          model: 'Users', 
-          key: 'id', 
+        references: {
+          model: 'Users',
+          key: 'id',
         },
-        onDelete: 'CASCADE',
+        onDelete: 'RESTRICT',
       },
-      experienceType: { 
+      experienceType: {
         type: Sequelize.ENUM('Education', 'Employment'),
-        allowNull: false, 
+        allowNull: false,
       },
-      organizationName: { 
-        type: Sequelize.STRING, 
-        allowNull: false, 
-        },
+      organizationName: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
       createdAt: {
-        allowNull: false, 
+        allowNull: false,
         type: Sequelize.DATE,
       },
       updatedAt: {
-        allowNull: false, 
+        allowNull: false,
         type: Sequelize.DATE,
-      }
+      },
     });
   },
 
