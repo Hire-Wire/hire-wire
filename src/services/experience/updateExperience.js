@@ -43,21 +43,20 @@ class UpdateExperience {
       };
     } catch (e) {
       throw new Error(e.message);
-      // return { success: false, error: e.message };
     }
   }
 
   // Private method to update Employment details
   async #updateEmployment(employmentData) {
     await Employment.update(employmentData, {
-      where: { experienceId: this.experienceId },
+      where: { experienceId: this.experienceId, id: employmentData.id },
     });
   }
 
   // Private method to update Education details
   async #updateEducation(educationData) {
     await Education.update(educationData, {
-      where: { experienceId: this.experienceId },
+      where: { experienceId: this.experienceId, id: educationData.id },
     });
   }
 }

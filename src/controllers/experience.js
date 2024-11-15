@@ -93,7 +93,7 @@ class ExperienceController {
 
   async update(req, res) {
     const { id } = req.params;
-    const userId = req.user.id; // Assume user ID is available from authentication middleware
+    const userId = req.user.id;
     const updatedData = req.body;
 
     const updateService = new UpdateExperience(id, userId, updatedData);
@@ -117,7 +117,6 @@ class ExperienceController {
           error: error.message,
         });
       }
-      // If there's an exception thrown by the service, catch it and respond with 500
       return res.status(500).json({ message: 'Failed to update experience' });
     }
   }
