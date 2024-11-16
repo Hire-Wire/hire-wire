@@ -11,6 +11,7 @@ The user input prompt will be the description of a job.
 You must use that job description to tailor the user's information and form a resume and cover letter specifically for that job.
 Be sure to include some keywords from the job description and add them to the user's experience.
 The overall goal is to make a custom tailored version of the user's resume and cover letter for the job description passed as an input.
+Start the resume content with "##Resume##" and the cover letter with ##CoverLetter##".
 For the cover letter, generate all the details like employer name, company name, date, company address. 
 Make up information that you don't have like company name, etc.
 Dont put any addresses, leave them out of the document.

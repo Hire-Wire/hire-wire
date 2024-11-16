@@ -14,16 +14,19 @@ class LLMResponseProcessingService {
     }
 
     // Find the index of the Cover Letter section
-    const coverLetterStart = this.content.indexOf('# Cover Letter');
+    const coverLetterStart = this.content.indexOf('##CoverLetter##');
 
     if (coverLetterStart === -1) {
-      throw new Error('Could not find the start of the cover letter (# Cover Letter).');
+      throw new Error('Could not find the start of the cover letter (##CoverLetter##).');
     }
 
-    const resume = this.content.slice(0, coverLetterStart).trim();
+    const resume = this.content.slice(0, coverLetterStart)
+      .trim()
+      .replace(/^##Resume##\s*/, '');
+
     const coverLetter = this.content.slice(coverLetterStart)
       .trim()
-      .replace(/^# Cover Letter\s*/, '');
+      .replace(/^##CoverLetter##\s*/, '');
 
     if (!resume) {
       throw new Error('Extracted resume content is empty.');
