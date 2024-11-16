@@ -1,5 +1,3 @@
-// src/services/jobapplication/attachDocumentToJobApplicationService.js
-
 import db from '../../models/index.js';
 const { Document, JobApplication } = db;
 
@@ -12,15 +10,24 @@ class AttachDocumentToJobApplicationService {
   }
 
   async call() {
-    this.#validateDocumentType();
-    const jobApplication = await this.#findJobApplication();
-    if (!jobApplication) { throw new Error('Job application not found or access denied.'); }
-    const newDocument = await Document.create({
-      docType: this.docType,
-      docBody: this.docBody,
-      jobApplicationId: this.jobAppId,
-    });
-    return newDocument;
+    try {
+      this.#validateDocumentType();
+
+      const jobApplication = await this.#findJobApplication();
+      if (!jobApplication) {
+        throw new Error('Job application not found or access denied.');
+      }
+
+      const newDocument = await Document.create({
+        docType: this.docType,
+        docBody: this.docBody,
+        jobApplicationId: this.jobAppId,
+      });
+
+      return newDocument;
+    } catch (error) {
+      throw error;
+    }
   }
 
   #validateDocumentType() {
