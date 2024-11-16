@@ -5,53 +5,82 @@ import db from '../../models/index.js';
 const { Education, Employment, Experience } = db;
 
 class DeleteExperience {
-  constructor(experienceId, userId) {
+  constructor(experienceId, userId, id) {
     this.experienceId = experienceId;
     this.userId = userId;
+    this.id = id; // ID of the Education or Employment record to delete
   }
 
   async call() {
     try {
-      // Step 1: Find the Experience record
-      const experience = await Experience.findOne({
-        where: { id: this.experienceId, userId: this.userId },
-      });
+      const experience = await this.#findExperience();
 
       if (!experience) {
-        return { success: false, error: 'Experience not found' };
+        return { statusCode: 404, success: false, error: 'Experience not found' };
       }
 
-      // Step 2: Delete related Education or Employment experience if present
-      if (experience.experienceType.toUpperCase() === 'EDUCATION') {
-        // If it's an Education experience, delete related Education record
-        await Education.destroy({ where: { experienceId: this.experienceId } });
-      } else if (experience.experienceType.toUpperCase() === 'EMPLOYMENT') {
-        // If it's an Employment experience, delete related Employment record
-        await Employment.destroy({ where: { experienceId: this.experienceId } });
-      }
+      const deleteResult = await this.#deleteAssociatedRecord(experience);
 
-      // Step 3: Delete the base Experience record
-      // await Experience.destroy({
-      //   where: { id: this.experienceId, userId: this.userId },
-      // });
-
-      // Step 3: Delete the base Experience record
-      const deleteResult = await Experience.destroy({
-        where: { id: this.experienceId, userId: this.userId },
-      });
-
-      // If the deletion fails, throw an error to be caught by the controller
       if (deleteResult === 0) {
-        throw new Error('Failed to delete experience');
-}
+        return {
+          statusCode: 404,
+          success: false,
+          error: `${experience.experienceType} record to delete not found`,
+        };
+      }
 
+      const associatedRecordsCount = await this.#countAssociatedRecords();
 
-      return { success: true, message: 'Experience deleted successfully' };
+      if (associatedRecordsCount === 0) {
+        // No associated records left, delete the Experience
+        await experience.destroy();
+        return {
+          statusCode: 200,
+          success: true,
+          message: 'Experience record deleted successfully',
+        };
+      }
+      return {
+        statusCode: 200,
+        success: true,
+        message: `${experience.experienceType} record deleted successfully`,
+      };
     } catch (e) {
-      return { success: false, error: e.message };
+      return { statusCode: 500, success: false, error: e.message };
     }
   }
 
+  #deleteAssociatedRecord(experience) {
+    if (experience.experienceType.toUpperCase() === 'EDUCATION') {
+      return Education.destroy({
+        where: { id: this.id, experienceId: this.experienceId },
+      });
+    } if (experience.experienceType.toUpperCase() === 'EMPLOYMENT') {
+      return Employment.destroy({
+        where: { id: this.id, experienceId: this.experienceId },
+      });
+    }
+    throw new Error('Invalid experience type');
+  }
+
+  async #findExperience() {
+    const experience = await Experience.findOne({
+      where: { id: this.experienceId, userId: this.userId },
+    });
+
+    return experience;
+  }
+
+  async #countAssociatedRecords() {
+    const educationCount = await Education.count({
+      where: { experienceId: this.experienceId },
+    });
+    const employmentCount = await Employment.count({
+      where: { experienceId: this.experienceId },
+    });
+
+    return educationCount + employmentCount;
+  }
 }
 
 export default DeleteExperience;

@@ -1,4 +1,3 @@
-// src/models/Experience.js
 import { DataTypes } from 'sequelize';
 
 export default (sequelize) => {
@@ -17,16 +16,16 @@ export default (sequelize) => {
       allowNull: false,
       validate: {
         isIn: {
-          args: [['Education', 'Employment']], 
+          args: [['Education', 'Employment']],
           msg: 'experienceType must be either "Education" or "Employment"',
         },
       },
     },
-    
+
     organizationName: {
       type: DataTypes.STRING,
       allowNull: false,
-      // unique: true,
+      unique: true,
     },
   }, {
     tableName: 'Experiences',

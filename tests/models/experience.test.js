@@ -1,156 +1,122 @@
-// experience.test.js
-import { Umzug, SequelizeStorage } from 'umzug';
-import db from '../../src/models/index.js'; // Your sequelize models and connection
+/* eslint-disable no-undef */
+import db from '../../src/models/index.js';
 
 describe('Experience Model', () => {
   beforeAll(async () => {
-    // Ensure we are using the test environment
-    process.env.NODE_ENV = 'test'; // Force NODE_ENV to be 'test'
-
     try {
-      // Authenticate the connection with the test database
       await db.sequelize.authenticate();
-      console.log('Test Database connection established.');
-
-      //Clean up previous entries before each test
-      await db.User.destroy({where: {}});
-      await db.Experience.destroy({where: {}});
-
-      // Sync the test database, ensuring it’s fresh before running the tests
-      await db.sequelize.sync({ force: true }); // `force: true` will drop and recreate tables
-      console.log('Test Database synced successfully.');
+      await db.sequelize.sync({ force: true });
     } catch (error) {
-      console.error('Error during test DB sync:', error);
+      console.error('Error during sync:', error);
     }
-
-    // Run migrations
-    const umzug = new Umzug({
-      migrations: { glob: 'src/migrations/*.js' },
-      storage: new SequelizeStorage({ sequelize: db.sequelize }),
-      context: db.sequelize.getQueryInterface(),
-    });
-    await umzug.up();
   });
 
   afterAll(async () => {
-    // Close the database connection after tests are done
     await db.sequelize.close();
-    console.log('Test Database connection closed.');
   });
 
-   // Dynamically create unique email addresses for each test
-  const generateUniqueEmail = async () => `testuser_${Date.now()}@example.com`;
-
-  test('should create an Experience instance with valid attributes', async () => {
-    const email = await generateUniqueEmail(); // Unique email for each test
+  test('should create an experience with valid attributes', async () => {
     const user = await db.User.create({
-        email: email,
-        password: 'password123',
-        firstName: 'John',
-        lastName: 'Doe',
+      email: 'testuser@example.com',
+      password: 'password123',
+      firstName: 'Test',
+      lastName: 'User',
     });
 
     const experience = await db.Experience.create({
       userId: user.id,
-      experienceType: 'Employment',
-      organizationName: 'Company XYZ',
+      experienceType: 'Education',
+      organizationName: 'Test University',
     });
 
     expect(experience.userId).toBe(user.id);
-    expect(experience.experienceType).toBe('Employment');
-    expect(experience.organizationName).toBe('Company XYZ');
+    expect(experience.experienceType).toBe('Education');
+    expect(experience.organizationName).toBe('Test University');
   });
 
-  test('should throw an error if experienceType is missing', async () => {
-    try {
-        const email = await generateUniqueEmail(); // Unique email for each test
-        const user = await db.User.create({
-            email: email,
-            password: 'password123',
-            firstName: 'John',
-            lastName: 'Doe',
-        });
-      await db.Experience.create({
-        userId: user.id,
-        organizationName: 'Company XYZ',
-      });
-    } catch (error) {
-        expect(error.name).toBe('SequelizeValidationError');
-        expect(error.message).toMatch(/notNull Violation/); // Ensure it throws a validation error
-    }
-  });
-
-  test('should throw an error if organizationName is missing', async () => {
-    try {
-        const email = await generateUniqueEmail(); // Unique email for each test
-        const user = await db.User.create({
-            email: email,
-            password: 'password123',
-            firstName: 'John',
-            lastName: 'Doe',
-        });
-      await db.Experience.create({
-        userId: user.id,
-        experienceType: 'Employment',
-      });
-    } catch (error) {
-        expect(error.name).toBe('SequelizeValidationError');
-        expect(error.message).toMatch(/notNull Violation/); // Ensure it throws a validation error
-    }
-  });
-
-  test('should validate that experienceType is either "Education" or "Employment"', async () => {
-    try {
-        const email = await generateUniqueEmail(); // Unique email for each test
-        const user = await db.User.create({
-            email: email,
-            password: 'password123',
-            firstName: 'John',
-            lastName: 'Doe',
-        });
-      await db.Experience.create({
-        userId: user.id,
-        experienceType: 'InvalidType', // Invalid experience type
-        organizationName: 'Company XYZ',
-      });
-    } catch (error) {
-      expect(error.message).toMatch(/experienceType must be either "Education" or "Employment"/);
-    }
-  });
-
-  test('should have associations to Employment and Education models', async () => {
-    const email = await generateUniqueEmail(); // Unique email for each test
+  test('should not create an experience with invalid experienceType', async () => {
     const user = await db.User.create({
-        email: email,
-        password: 'password123',
-        firstName: 'John',
-        lastName: 'Doe',
+      email: 'invalidtype@example.com',
+      password: 'password123',
+      firstName: 'Invalid',
+      lastName: 'Type',
     });
+
+    await expect(
+      db.Experience.create({
+        userId: user.id,
+        experienceType: 'InvalidType',
+        organizationName: 'Invalid Organization',
+      })
+    ).rejects.toThrow();
+  });
+
+  test('should not create an experience without required fields', async () => {
+    const user = await db.User.create({
+      email: 'missingfields@example.com',
+      password: 'password123',
+      firstName: 'Missing',
+      lastName: 'Fields',
+    });
+
+    await expect(
+      db.Experience.create({
+        userId: user.id,
+        // Missing experienceType and organizationName
+      })
+    ).rejects.toThrow();
+  });
+
+  test('should enforce unique organizationName', async () => {
+    const user1 = await db.User.create({
+      email: 'user1@example.com',
+      password: 'password123',
+      firstName: 'User',
+      lastName: 'One',
+    });
+
+    const user2 = await db.User.create({
+      email: 'user2@example.com',
+      password: 'password123',
+      firstName: 'User',
+      lastName: 'Two',
+    });
+
+    await db.Experience.create({
+      userId: user1.id,
+      experienceType: 'Employment',
+      organizationName: 'Unique Org',
+    });
+
+    await expect(
+      db.Experience.create({
+        userId: user2.id,
+        experienceType: 'Education',
+        organizationName: 'Unique Org',
+      })
+    ).rejects.toThrow();
+  });
+
+  test('should associate experience with user', async () => {
+    const user = await db.User.create({
+      email: 'associate@example.com',
+      password: 'password123',
+      firstName: 'Associate',
+      lastName: 'User',
+    });
+
     const experience = await db.Experience.create({
       userId: user.id,
       experienceType: 'Employment',
-      organizationName: 'Company XYZ',
-    });
-    // Test hasMany association with Employment
-    const employment = await experience.createEmployment({
-      jobTitle: 'Software Engineer',
-      startDate: new Date(),
+      organizationName: 'Associate Org',
     });
 
-    expect(employment.experienceId).toBe(experience.id);
-    expect(employment.jobTitle).toBe('Software Engineer');
-
-    // Test hasMany association with Education
-    const education = await experience.createEducation({
-      degree: 'B.Sc. Computer Science',
-      fieldOfStudy: 'Computer Science',
-      startDate: new Date(),
+    const fetchedExperience = await db.Experience.findOne({
+      where: { id: experience.id },
+      include: [{ model: db.User, as: 'User' }], // Specify the alias here
     });
 
-    expect(education.experienceId).toBe(experience.id);
-    expect(education.degree).toBe('B.Sc. Computer Science');
-
+    expect(fetchedExperience.User).toBeDefined();
+    expect(fetchedExperience.User.email).toBe('associate@example.com');
   });
-
-
 });

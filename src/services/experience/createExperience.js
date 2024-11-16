@@ -31,16 +31,52 @@ class CreateExperience {
         );
       }
 
-      if (experienceType.toUpperCase() === CreateExperience.EDUCATION) {
-        await this.#createEducation(this.experience.education, baseExperience.id);
-      } else if (experienceType.toUpperCase() === CreateExperience.EMPLOYMENT) {
-        await this.#createEmployment(this.experience.employment, baseExperience.id);
-      }
+      const result = await this.#processExperienceType(experienceType, baseExperience.id);
+      if (result) { return result; }
 
-      return baseExperience;
+      return {
+        statusCode: 201,
+        success: true,
+        message: 'Experience created successfully',
+        experience: baseExperience,
+      };
     } catch (e) {
       throw new Error(e.message);
     }
+  }
+
+  async #processExperienceType(experienceType, experienceId) {
+    if (experienceType.toUpperCase() === CreateExperience.EDUCATION) {
+      // eslint-disable-next-line no-unused-vars
+      const [education, created] = await this.#createEducation(
+        this.experience.education,
+        experienceId
+      );
+      if (!created) {
+        return {
+          statusCode: 403,
+          message: 'Education already exists',
+          success: false,
+        };
+      }
+    } else if (experienceType.toUpperCase() === CreateExperience.EMPLOYMENT) {
+      // eslint-disable-next-line no-unused-vars
+      const [employment, created] = await this.#createEmployment(
+        this.experience.employment,
+        experienceId
+      );
+      if (!created) {
+        return {
+          statusCode: 403,
+          message: 'Employment already exists',
+          success: false,
+        };
+      }
+    } else {
+      throw new Error('Invalid experience type');
+    }
+    // No need to return anything if creation is successful
+    return null;
   }
 
   async #findExistingExperience() {
@@ -56,12 +92,14 @@ class CreateExperience {
     return user;
   }
 
-  #createEducation(education, experienceId) {
-    return Education.create({ ...education, experienceId });
+  #createEducation(educationData, experienceId) {
+    const { degree, ...rest } = educationData;
+    return Education.findOrCreate({ where: { degree, experienceId }, defaults: { ...rest } });
   }
 
-  #createEmployment(employment, experienceId) {
-    return Employment.create({ ...employment, experienceId });
+  #createEmployment(employmentData, experienceId) {
+    const { jobTitle, ...rest } = employmentData;
+    return Employment.findOrCreate({ where: { jobTitle, experienceId }, defaults: { ...rest } });
   }
 }
 

@@ -1,4 +1,3 @@
-// src/models/Employment.js
 import { DataTypes } from 'sequelize';
 
 export default (sequelize) => {
@@ -28,19 +27,26 @@ export default (sequelize) => {
     },
     experienceId: {
       type: DataTypes.INTEGER,
-      primaryKey: true,
       references: {
         model: 'Experiences',
         key: 'id',
       },
+      onDelete: 'CASCADE',
     },
   }, {
     tableName: 'Employments',
     timestamps: true,
+    indexes: [
+      {
+        unique: true,
+        fields: ['jobTitle', 'experienceId'],
+        name: 'unique_job_title_per_experience',
+      },
+    ],
   });
 
   Employment.associate = (models) => {
-    Employment.belongsTo(models.Experience, { foreignKey: 'experienceId' });
+    Employment.belongsTo(models.Experience, { foreignKey: 'experienceId', onDelete: 'RESTRICT' });
   };
 
   return Employment;
