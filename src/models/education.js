@@ -37,7 +37,7 @@ export default (sequelize) => {
         model: 'Experiences',
         key: 'id',
       },
-      onDelete: 'RESTRICT',
+      onDelete: 'CASCADE',
     },
   }, {
     tableName: 'Educations',
@@ -45,8 +45,8 @@ export default (sequelize) => {
     indexes: [
       {
         unique: true,
-        fields: ['degree', 'experienceId'],
-        name: 'unique_degree_per_experience',
+        fields: ['degree', 'fieldOfStudy', 'experienceId'],
+        name: 'unique_degree_and_field_of_study_per_experience',
       },
     ],
   });

@@ -16,7 +16,7 @@ module.exports = {
           model: 'Users',
           key: 'id',
         },
-        onDelete: 'RESTRICT',
+        onDelete: 'CASCADE',
       },
       experienceType: {
         type: Sequelize.ENUM('Education', 'Employment'),

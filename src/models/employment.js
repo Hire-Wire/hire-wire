@@ -31,7 +31,7 @@ export default (sequelize) => {
         model: 'Experiences',
         key: 'id',
       },
-      onDelete: 'RESTRICT',
+      onDelete: 'CASCADE',
     },
   }, {
     tableName: 'Employments',

@@ -2,13 +2,15 @@
 module.exports = {
   async up(queryInterface) {
     await queryInterface.addConstraint('Educations', {
-      fields: ['degree', 'experienceId'],
+      fields: ['degree', 'fieldOfStudy', 'experienceId'],
       type: 'unique',
-      name: 'unique_degree_per_experience', // Must match the index name if specified
+      name: 'unique_degree_and_field_of_study_per_experience',
     });
   },
 
   async down(queryInterface) {
-    await queryInterface.removeConstraint('Educations', 'unique_degree_per_experience');
+    await queryInterface.removeConstraint(
+      'Educations', 'unique_degree_and_field_of_study_per_experience'
+    );
   },
 };

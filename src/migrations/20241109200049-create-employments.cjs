@@ -39,7 +39,7 @@ module.exports = {
           key: 'id',
         },
         allowNull: false,
-        onDelete: 'RESTRICT',
+        onDelete: 'CASCADE',
       },
       createdAt: {
         allowNull: false,

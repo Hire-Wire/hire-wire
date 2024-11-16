@@ -89,7 +89,7 @@ describe('Education Model', () => {
     ).rejects.toThrow('End date must be after or equal to the start date');
   });
 
-  test('should enforce unique degree per experience', async () => {
+  test('should enforce unique degree and field of study per experience', async () => {
     const user = await db.User.create({
       email: 'uniqueedu@example.com',
       password: 'password123',
@@ -113,7 +113,7 @@ describe('Education Model', () => {
     await expect(
       db.Education.create({
         degree: 'Bachelor of Arts', // Same degree
-        fieldOfStudy: 'Literature',
+        fieldOfStudy: 'History', // Same Field of Stidy
         startDate: new Date('2016-09-01'),
         experienceId: experience.id, // Same experienceId
       })
