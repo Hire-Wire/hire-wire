@@ -40,7 +40,7 @@ export default (sequelize) => {
       validate: {
         len: {
           args: [0, 5000],
-          msg: 'Job description should not exceed 1000 characters',
+          msg: 'Job description should not exceed 5000 characters',
         },
       },
     },
