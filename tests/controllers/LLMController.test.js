@@ -62,16 +62,18 @@ describe('LLMController', () => {
       experienceType: 'Education',
       organizationName: 'State University',
       education: {
-        degree: 'BSc Computer Science',
+        degree: 'Bachelors of Science',
         fieldOfStudy: 'Computer Science',
         startDate: '2015-08-15',
         endDate: '2019-05-20',
-        grade: 99,
+        grade: 4.0,
       },
     };
 
-    await new CreateExperience(testUserEmployment, testUser.id).call();
-    await new CreateExperience(testUserEducation, testUser.id).call();
+    const createEmploymentExperienceService = new CreateExperience(testUserEmployment, testUser.id);
+    const createEducationExperienceService = new CreateExperience(testUserEducation, testUser.id);
+    await createEmploymentExperienceService.call();
+    await createEducationExperienceService.call();
 
     authToken = await Authenticate.generateToken(testUser);
     Authenticate.generateToken = jest.fn(() => authToken);
@@ -99,7 +101,7 @@ describe('LLMController', () => {
 
       // Mock the successful response from LLM generation service
       LLMGenerationService.prototype.callChatGPT = jest.fn().mockResolvedValue(
-        '# Resume\n- Skills\n# Cover Letter\nDear Hiring Manager,'
+        '##Resume##\n- Skills\n##CoverLetter##\nDear Hiring Manager,'
       );
 
       const reqBody = {
