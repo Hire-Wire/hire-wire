@@ -27,8 +27,8 @@ export default (sequelize) => {
       allowNull: true,
       validate: {
         len: {
-          args: [0, 2000],
-          msg: 'Document content must not exceed 2000 characters.',
+          args: [0, 5000],
+          msg: 'Document content must not exceed 5000 characters.',
         },
       },
     },
