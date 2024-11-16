@@ -15,14 +15,14 @@ class LLMResponseProcessingService {
       throw new Error('Could not find the start of the cover letter (# Cover Letter).');
     }
 
-    // Extract the resume content from the beginning to the start of the Cover Letter section
+    // Extract the resume content
     const resume = this.content.substring(0, coverLetterStart)
-      .trim(); // Remove any extra spaces or newlines
+      .trim();
 
-    // Extract the cover letter, starting after the Cover Letter header
+    // Extract the cover letter content
     const coverLetter = this.content.substring(coverLetterStart)
-      .trim() // Remove any extra spaces or newlines
-      .replace(/^# Cover Letter\s*/, ''); // Remove the header
+      .trim()
+      .replace(/^# Cover Letter\s*/, '');
 
     return { resume, coverLetter };
   }

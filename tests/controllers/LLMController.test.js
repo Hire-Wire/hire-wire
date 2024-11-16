@@ -2,12 +2,15 @@ import { jest } from '@jest/globals';
 import request from 'supertest';
 import app from '../../server.js';
 import LLMGenerationService from '../../src/services/llm/LLMGenerationService.js';
+import CreateExperience from '../../src/services/experience/createExperience.js';
 import Authenticate from '../../src/utils/Authenticate.js';
 import db from '../../src/models/index.js';
 
 jest.mock('../../src/services/llm/LLMGenerationService.js', () => ({
   callChatGPT: jest.fn(),
 }));
+
+jest.mock('axios');
 
 let testUser;
 let authToken;
@@ -27,16 +30,15 @@ describe('LLMController', () => {
     jest.clearAllMocks();
 
     // Create a new user before each test
-    const generateUniqueEmail = async () => {
+    const generateUniqueEmail = async () =>
       // Simulating async email generation process
-      return new Promise((resolve) => {
+      new Promise((resolve) => {
         setTimeout(() => {
           resolve(`testuser_${Date.now()}@example.com`);
         }, 100); // Just simulating a small delay
       });
-    };
-
     const email = await generateUniqueEmail();
+
     testUser = await db.User.create({
       email,
       password: 'password123',
@@ -44,7 +46,40 @@ describe('LLMController', () => {
       lastName: 'Doe',
     });
 
-    const userId = testUser.id;
+    const testUserEmployment = {
+      experienceType: 'Employment',
+      organizationName: 'Tech Solutions LLC',
+      employment: {
+        jobTitle: 'Software Engineer',
+        jobDescription: 'Developed scalable applications.',
+        startDate: '2020-01-01',
+        endDate: '2022-01-01',
+      },
+    };
+
+    const testUserEducation = {
+      experienceType: 'Education',
+      organizationName: 'State University',
+      education: {
+        degree: 'BSc Computer Science',
+        fieldOfStudy: 'Computer Science',
+        startDate: '2015-08-15',
+        endDate: '2019-05-20',
+        grade: 99,
+      },
+    };
+
+    try {
+      console.log(`Creating employment experience for user ID: ${testUser.id}...`);
+      await new CreateExperience(testUserEmployment, testUser.id).call();
+      console.log('Successfully created employment experience.');
+
+      console.log(`Creating education experience for user ID: ${testUser.id}...`);
+      await new CreateExperience(testUserEducation, testUser.id).call();
+      console.log('Successfully created education experience.');
+    } catch (error) {
+      console.error('Error creating experience:', error.message);
+    }
 
     // Mock the authentication token generation
     authToken = await Authenticate.generateToken(testUser);
@@ -52,7 +87,7 @@ describe('LLMController', () => {
 
     // Mock the successful response from LLM generation service
     LLMGenerationService.prototype.callChatGPT = jest.fn().mockResolvedValue(
-      '# Resume\n- Skills\n# Cover Letter\nDear Hiring Manager,' // The expected response as a string
+      '# Resume\n- Skills\n# Cover Letter\nDear Hiring Manager,'
     );
   });
 
@@ -68,7 +103,6 @@ describe('LLMController', () => {
         jobDescriptionBody: 'Develop and maintain software solutions.',
         customPrompt: 'Focus on Python and team collaboration skills.',
       };
-
       const res = await request(app)
         .post('/api/v1/job-application/generate-content')
         .set('Authorization', `Bearer ${authToken}`)
