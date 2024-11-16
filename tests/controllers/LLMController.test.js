@@ -5,6 +5,7 @@ import LLMGenerationService from '../../src/services/llm/LLMGenerationService.js
 import CreateExperience from '../../src/services/experience/createExperience.js';
 import Authenticate from '../../src/utils/Authenticate.js';
 import db from '../../src/models/index.js';
+import { SequelizeStorage, Umzug } from 'umzug';
 
 jest.mock('../../src/services/llm/LLMGenerationService.js', () => {
   return jest.fn().mockImplementation(() => ({
@@ -23,14 +24,20 @@ describe('LLMController', () => {
     process.env.NODE_ENV = 'test';
     try {
       await db.sequelize.authenticate();
+      const umzug = new Umzug({
+        migrations: { glob: 'src/migrations/*.js' },
+        storage: new SequelizeStorage({ sequelize: db.sequelize }),
+        context: db.sequelize.getQueryInterface(),
+      });
+      await umzug.down({ to: 0 }); // Roll back all migrations first
+      await umzug.up(); // Apply all migrations
     } catch (error) {
-      throw new Error('Error during test DB sync.');
+      throw error;
     }
   });
 
   beforeEach(async () => {
     jest.clearAllMocks();
-    jest.setTimeout(15000);
 
     const generateUniqueEmail = async () =>
       new Promise((resolve) => {
@@ -38,7 +45,24 @@ describe('LLMController', () => {
           resolve(`testuser_${Date.now()}@example.com`);
         }, 100);
       });
+
+    const generateUniqueEmploymentOrg = async () =>
+      new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(`Tech Solutions LLC_${Date.now()}`);
+        }, 100);
+      });
+
+    const generateUniqueEducationOrg = async () =>
+      new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(`State University LLC_${Date.now()}`);
+        }, 100);
+      });
+
     const email = await generateUniqueEmail();
+    const employmentOrgName = await generateUniqueEmploymentOrg();
+    const educationOrgName = await generateUniqueEmploymentOrg();
 
     testUser = await db.User.create({
       email,
@@ -49,7 +73,7 @@ describe('LLMController', () => {
 
     const testUserEmployment = {
       experienceType: 'Employment',
-      organizationName: 'Tech Solutions LLC',
+      organizationName: employmentOrgName,
       employment: {
         jobTitle: 'Software Engineer',
         jobDescription: 'Developed scalable applications.',
@@ -60,7 +84,7 @@ describe('LLMController', () => {
 
     const testUserEducation = {
       experienceType: 'Education',
-      organizationName: 'State University',
+      organizationName: educationOrgName,
       education: {
         degree: 'Bachelors of Science',
         fieldOfStudy: 'Computer Science',
