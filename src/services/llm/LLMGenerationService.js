@@ -1,6 +1,6 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
-import { systemPrompt, sampleUserPrompt } from './prompts/llmprompt.js';
+import { systemPrompt, sampleUserPrompt } from './prompts/LLMConfig.js';
 
 // Load environment variables from .env file
 dotenv.config();
