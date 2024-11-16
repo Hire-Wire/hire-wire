@@ -9,7 +9,10 @@ export default {
   // Specify file extensions for tests
   moduleFileExtensions: ['js', 'jsx', 'json', 'node'],
 
-  // If you have setup files, ensure they use ESM syntax
+  // Default timeout for all tests (in milliseconds)
+  testTimeout: 15000,
+
+  // If you have setup files, include them here
   // setupFiles: ['./jest.setup.mjs'],
 
   // Add any other necessary Jest configurations here

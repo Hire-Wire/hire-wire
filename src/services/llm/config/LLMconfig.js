@@ -1,4 +1,4 @@
-// prompts.js
+// config.js
 export const systemPrompt = `
 Your job is to create a resume and cover letter using the provided information in markdown.
 The request will be presented in JSON format as shown at the end of this prompt.

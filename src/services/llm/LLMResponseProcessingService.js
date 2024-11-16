@@ -3,11 +3,16 @@ class LLMResponseProcessingService {
     this.content = content;
   }
 
-  call() {
-    return this.#splitResumeAndCoverLetter();
+  async call() {
+    const result = await this.splitResumeAndCoverLetter();
+    return result;
   }
 
-  #splitResumeAndCoverLetter() {
+  splitResumeAndCoverLetter() {
+    if (!this.content || typeof this.content !== 'string') {
+      throw new Error('Invalid content. Expected a non-empty string.');
+    }
+
     // Find the index of the Cover Letter section
     const coverLetterStart = this.content.indexOf('# Cover Letter');
 
@@ -15,14 +20,18 @@ class LLMResponseProcessingService {
       throw new Error('Could not find the start of the cover letter (# Cover Letter).');
     }
 
-    // Extract the resume content from the beginning to the start of the Cover Letter section
-    const resume = this.content.substring(0, coverLetterStart)
-      .trim(); // Remove any extra spaces or newlines
+    const resume = this.content.slice(0, coverLetterStart).trim();
+    const coverLetter = this.content.slice(coverLetterStart)
+      .trim()
+      .replace(/^# Cover Letter\s*/, '');
 
-    // Extract the cover letter, starting after the Cover Letter header
-    const coverLetter = this.content.substring(coverLetterStart)
-      .trim() // Remove any extra spaces or newlines
-      .replace(/^# Cover Letter\s*/, ''); // Remove the header
+    if (!resume) {
+      throw new Error('Extracted resume content is empty.');
+    }
+
+    if (!coverLetter) {
+      throw new Error('Extracted cover letter content is empty.');
+    }
 
     return { resume, coverLetter };
   }
