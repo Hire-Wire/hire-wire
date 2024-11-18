@@ -7,6 +7,14 @@ class JobApplicationController {
   /**
    * Creates a new job application and associates a job description with it.
    */
+
+// SQL Query for inserting a new job application
+// INSERT INTO job_applications (userId)
+// VALUES (userId);
+
+// SQL Query for inserting a new job description associated with the job application
+// INSERT INTO job_descriptions (jobTitle, jobCompany, jobDescriptionBody, jobApplicationId)
+// VALUES (jobAppTitle, jobAppCompany, jobAppDescription, jobApplicationId);
   createJobApplication = async (req, res) => {
     const userId = req.user?.id;
     const { jobAppTitle, jobAppCompany, jobAppDescription, ...jobAppData } = req.body;
@@ -61,6 +69,9 @@ class JobApplicationController {
   /**
    * Adds a document to an existing job application.
    */
+  // SQL Query for inserting a new document for the job application
+  // INSERT INTO documents (docType, docBody, jobApplicationId)
+  // VALUES (docType, docBody, jobApplicationId);
   addDocument = async (req, res) => {
     const { id } = req.params;
     const { docType, docBody } = req.body;
@@ -115,6 +126,12 @@ class JobApplicationController {
   /**
    * Retrieves a specific job application by ID, including JobDescription and attached documents.
    */
+// SQL Query for retrieving a job application along with its job description and documents
+// SELECT * 
+// FROM job_applications ja
+// LEFT JOIN job_descriptions jd ON jd.jobApplicationId = ja.id
+// LEFT JOIN documents d ON d.jobApplicationId = ja.id
+// WHERE ja.id = jobApplicationId AND ja.userId = userId;
   getJobApplication = async (req, res) => {
     const { id } = req.params;
 
@@ -151,6 +168,10 @@ class JobApplicationController {
   /**
    * Retrieves a document by its ID.
    */
+  // SQL Query for retrieving a specific document by its ID
+  // SELECT * 
+  // FROM documents
+  // WHERE id = documentId;
   getDocumentByID = async (req, res) => {
     const { id } = req.params;
 
@@ -181,6 +202,16 @@ class JobApplicationController {
   /**
    * Deletes a job application and all its associated job description and documents.
    */
+  
+// SQL Query for deleting the job application and all associated job description and documents
+// DELETE FROM documents
+// WHERE jobApplicationId = jobApplicationId;
+
+// DELETE FROM job_descriptions
+// WHERE jobApplicationId = jobApplicationId;
+
+// DELETE FROM job_applications
+// WHERE id = jobApplicationId AND userId = userId;
   deleteJobApplication = async (req, res) => {
     const { id } = req.params;
 
