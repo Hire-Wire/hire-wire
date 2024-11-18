@@ -32,18 +32,50 @@ class LLMController {
     };
 
     try {
+      // Retrieve user profile
+      const userProfile = await new RetrieveUserProfileService(userId, authToken).call();
+      let userExperiences;
+      try {
+        // Retrieve user experiences
+        userExperiences = await new RetrieveUserExperiencesService(userId, authToken).call();
+
+        // Check if user has experiences (this is no longer necessary as the service handles it)
+        const hasExperiences = (
+          (Array.isArray(userExperiences.employments) && userExperiences.employments.length > 0)
+          || (Array.isArray(userExperiences.educations) && userExperiences.educations.length > 0)
+        );
+
+        if (!hasExperiences) {
+          // This block will not execute as the service throws the error earlier
+          return res.status(400).json({
+            success: false,
+            message: 'Failed to generate content. You have no experiences added.',
+          });
+        }
+      } catch (error) {
+        // Catch and handle any errors from the service
+        if (error.message === 'No experiences found for the user.') {
+          return res.status(400).json({
+            success: false,
+            message: 'Failed to generate content. You have no experiences added.',
+          });
+        }
+
+        // For other errors, send a generic error message
+        return res.status(500).json({
+          success: false,
+          message: 'An error occurred while retrieving user experiences.',
+          error: error.message,
+        });
+      }
+
+
       // Create job application
       const createdJobDescription = await new JobApplicationCreationService(
         userId,
         jobApplicationDetails
       ).call();
       const jobAppId = createdJobDescription.jobApplicationId;
-
-      // Retrieve user profile
-      const userProfile = await new RetrieveUserProfileService(userId, authToken).call();
-
-      // Retrieve user experiences
-      const userExperiences = await new RetrieveUserExperiencesService(userId, authToken).call();
 
       // Prepare LLM request data
       const builderService = new LLMRequestBuilderService(
