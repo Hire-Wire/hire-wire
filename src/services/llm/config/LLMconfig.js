@@ -19,6 +19,7 @@ Begin the cover letter with "Dear Hiring Manager".
 Do not put a date on the cover letter.
 Do not include any other information in your response. JUST THE MARKDOWN CODE.
 
+
 When creating a resume and cover letter:
 1. Use clean, structured Markdown syntax.
 2. Include sections for:
