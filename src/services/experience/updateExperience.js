@@ -11,8 +11,8 @@ class UpdateExperience {
 
   async call() {
     try {
-      // Step 1: Update the base experience fields
-      const [updated] = await Experience.update(this.updatedData, {
+      const { organizationName } = this.updatedData;
+      const [updated] = await Experience.update({ organizationName }, {
         where: { id: this.experienceId, userId: this.userId },
       });
 
@@ -20,7 +20,6 @@ class UpdateExperience {
         return { success: false, error: 'Experience not found' };
       }
 
-      // Step 2: Update related Employment or Education details if present in the updatedData
       const experienceType = this.updatedData.experienceType
         ? this.updatedData.experienceType.toUpperCase()
         : null;
@@ -31,7 +30,6 @@ class UpdateExperience {
         await this.#updateEducation(this.updatedData.education);
       }
 
-      // Step 3: Fetch and return the updated experience with associations
       const updatedExperience = await Experience.findByPk(this.experienceId, {
         include: [Employment, Education],
       });
@@ -46,14 +44,12 @@ class UpdateExperience {
     }
   }
 
-  // Private method to update Employment details
   async #updateEmployment(employmentData) {
     await Employment.update(employmentData, {
       where: { experienceId: this.experienceId, id: employmentData.id },
     });
   }
 
-  // Private method to update Education details
   async #updateEducation(educationData) {
     await Education.update(educationData, {
       where: { experienceId: this.experienceId, id: educationData.id },
