@@ -6,17 +6,15 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import passport from 'passport';
 import passportConfig from './src/config/passport.js';
-import routes from './src/routes/index.js'; // Adjust route import if needed
+import routes from './src/routes/index.js';
 
-// Configure dotenv
 dotenv.config();
 
-// Set up the express app
 const app = express();
 const port = process.env.PORT || 8000;
 
-// Middleware Setup
-const allowedOrigins = process.env.CORS_ORIGIN?.split(',') || ['http://localhost:8000'];
+const allowedOrigins = process.env.CORS_ORIGIN.split(',');
+
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -25,9 +23,17 @@ app.use(cors({
       callback(new Error('Not allowed by CORS'));
     }
   },
-  methods: 'GET,POST,PUT,DELETE',
+  methods: 'GET,POST,PUT,DELETE,OPTIONS',
   credentials: true,
 }));
+
+app.options('*', (req, res) => {
+  res.set('Access-Control-Allow-Origin', req.headers.origin || 'http://localhost:8000');
+  res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.set('Access-Control-Allow-Credentials', 'true');
+  res.status(204).send();
+});
 
 // Initialize passport
 passportConfig(passport);
@@ -38,7 +44,7 @@ app.use(json());
 app.use(urlencoded({ extended: false }));
 
 // Routes
-routes(app); // Assuming routes is a function that takes `app` as an argument
+routes(app);
 
 // Global Error Handling Middleware (Optional)
 app.use((err, req, res, next) => {
