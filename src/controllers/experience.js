@@ -61,19 +61,15 @@ class ExperienceController {
 
       // Fetch all experiences for the user
       const experiences = await Experience.findAll({
-        where: { userID: userId },
+        where: { userId },
         include: [
           {
             model: Education,
             required: false,
-            // Only include if type is Education
-            where: { '$Experience.ExperienceType$': 'Education' },
           },
           {
             model: Employment,
             required: false,
-            // Only include if type is Employment
-            where: { '$Experience.ExperienceType$': 'Employment' },
           },
         ],
       });
