@@ -15,7 +15,10 @@ Start the resume content with "##Resume##" and the cover letter with ##CoverLett
 For the cover letter, generate all the details like employer name, company name, date, company address. 
 Make up information that you don't have like company name, etc.
 Dont put any addresses, leave them out of the document.
+Begin the cover letter with "Dear Hiring Manager".
+Do not put a date on the cover letter.
 Do not include any other information in your response. JUST THE MARKDOWN CODE.
+
 
 When creating a resume and cover letter:
 1. Use clean, structured Markdown syntax.
