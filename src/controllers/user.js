@@ -7,6 +7,9 @@ import Authenticate from '../utils/Authenticate.js';
 const { User } = db;
 
 class UserController {
+ // SQL Query for "Create" operation:
+  // INSERT INTO users (email, password, firstName, lastName)
+  // VALUES (email, password, firstName, lastName);
   async create(req, res) {
     // Validation check
     const errors = validationResult(req);
@@ -41,6 +44,8 @@ class UserController {
     }
   }
 
+   // SQL Query for "Login" operation:
+  // SELECT * FROM users WHERE email = email;
   async login(req, res) {
     // Validation check
     const errors = validationResult(req);
@@ -82,6 +87,8 @@ class UserController {
     res.json({ message: 'Logout successful' });
   }
 
+    // SQL Query for "View" operation:
+  // SELECT * FROM users WHERE id = id;
   async view(req, res) {
     try {
       if (req.user.id !== parseInt(req.params.id, 10)) {
@@ -97,6 +104,10 @@ class UserController {
     }
   }
 
+    // SQL Query for "Update" operation:
+  // UPDATE users 
+  // SET email = email, password = password, firstName = firstName, lastName = lastName 
+  // WHERE id = id;
   async update(req, res) {
     // Check for validation errors
     const errors = validationResult(req);
@@ -157,6 +168,8 @@ class UserController {
     }
   }
 
+  // SQL Query for "Delete" operation:
+  // DELETE FROM users WHERE id = id;
   async remove(req, res) {
     try {
       if (req.user.id !== parseInt(req.params.id, 10)) {

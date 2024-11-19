@@ -9,6 +9,14 @@ import DeleteExperience from '../services/experience/deleteExperience.js';
 const { Experience, Employment, Education, User } = db;
 
 class ExperienceController {
+
+  // SQL Query for creating Employment experience:
+  // INSERT INTO experiences (userID, experienceType, organizationName) VALUES (userID, 'Employment', organizationName);
+  // INSERT INTO employment (experienceID, jobTitle, jobDescription, startDate, endDate) VALUES (experienceID, jobTitle, jobDescription, startDate, endDate);
+  
+  // SQL Query for creating Education experience:
+  // INSERT INTO experiences (userID, experienceType, organizationName) VALUES (userID, 'Education', organizationName);
+  // INSERT INTO education (experienceID, degree, fieldOfStudy, grade, startDate, endDate) VALUES (experienceID, degree, fieldOfStudy, grade, startDate, endDate);
   async create(req, res) {
     // Validate the request
     const errors = validationResult(req);
@@ -55,6 +63,15 @@ class ExperienceController {
     }
   }
 
+  // SQL Query for getting all Employment experiences:
+  // SELECT e.id, e.experienceType, e.organizationName, emp.jobTitle, emp.jobDescription, emp.startDate, emp.endDate
+  // FROM experiences e JOIN employment emp ON e.id = emp.experienceID
+  // WHERE e.userID = userId AND e.experienceType = 'Employment';
+
+  // SQL Query for getting all Education experiences:
+  // SELECT e.id, e.experienceType, e.organizationName, edu.degree, edu.fieldOfStudy, edu.grade, edu.startDate, edu.endDate
+  // FROM experiences e JOIN education edu ON e.id = edu.experienceID
+  // WHERE e.userID = userId AND e.experienceType = 'Education';
   async getAll(req, res) {
     try {
       const userId = req.user.id;
@@ -90,7 +107,13 @@ class ExperienceController {
       });
     }
   }
+  // SQL Query for updating Employment experience:
+  // UPDATE experiences SET experienceType = 'Employment', organizationName = organizationName WHERE id = experienceId AND userID = userId;
+  // UPDATE employment SET jobTitle = jobTitle, jobDescription = jobDescription, startDate = startDate, endDate = endDate WHERE experienceID = experienceId;
 
+  // SQL Query for updating Education experience:
+  // UPDATE experiences SET experienceType = 'Education', organizationName = organizationName WHERE id = experienceId AND userID = userId;
+  // UPDATE education SET degree = degree, fieldOfStudy = fieldOfStudy, grade = grade, startDate = startDate, endDate = endDate WHERE experienceID = experienceId;
   async update(req, res) {
     const { id } = req.params;
     const userId = req.user.id;
@@ -121,6 +144,13 @@ class ExperienceController {
     }
   }
 
+  // SQL Query for deleting Employment experience:
+  // DELETE FROM employment WHERE experienceID = experienceId;
+  // DELETE FROM experiences WHERE id = experienceId AND userID = userId;
+
+  // SQL Query for deleting Education experience:
+  // DELETE FROM education WHERE experienceID = experienceId;
+  // DELETE FROM experiences WHERE id = experienceId AND userID = userId;
   async remove(req, res) {
     const { experienceId } = req.params;
     const userId = req.user.id;

@@ -25,6 +25,9 @@ class LLMController {
       });
     }
 
+// SQL Query to insert a new job description for the job application
+// INSERT INTO job_descriptions (jobTitle, jobCompany, jobDescriptionBody, jobApplicationId)
+// VALUES (jobTitle, jobCompany, jobDescriptionBody, jobAppId);
     const jobApplicationDetails = {
       jobTitle,
       jobCompany,
@@ -32,10 +35,24 @@ class LLMController {
     };
 
     try {
+
+// SQL Query to retrieve the user profile 
+// SELECT * FROM users WHERE id = userId;
       // Retrieve user profile
       const userProfile = await new RetrieveUserProfileService(userId, authToken).call();
       let userExperiences;
       try {
+
+// SQL Query to retrieve the user's experiences (employments and educations)
+  // SQL Query for getting all Employment experiences:
+  // SELECT e.id, e.experienceType, e.organizationName, emp.jobTitle, emp.jobDescription, emp.startDate, emp.endDate
+  // FROM experiences e JOIN employment emp ON e.id = emp.experienceID
+  // WHERE e.userID = userId AND e.experienceType = 'Employment';
+
+  // SQL Query for getting all Education experiences:
+  // SELECT e.id, e.experienceType, e.organizationName, edu.degree, edu.fieldOfStudy, edu.grade, edu.startDate, edu.endDate
+  // FROM experiences e JOIN education edu ON e.id = edu.experienceID
+  // WHERE e.userID = userId AND e.experienceType = 'Education';
         // Retrieve user experiences
         userExperiences = await new RetrieveUserExperiencesService(userId, authToken).call();
 
@@ -90,6 +107,11 @@ class LLMController {
       const LLMResponseProcessor = new LLMResponseProcessingService(generatedResult);
       const { resume, coverLetter } = await LLMResponseProcessor.call();
 
+      // SQL Query to insert documents (resume and cover letter) associated with the job application
+      // For resume
+      // INSERT INTO documents (docType, docBody, jobApplicationId)
+      // VALUES ('Resume', resumeContent, jobAppId);
+  
       // Attach documents to job application
       const resumeAttachmentService = new AttachDocumentToJobApplicationService(
         jobAppId,
@@ -99,6 +121,11 @@ class LLMController {
       );
       await resumeAttachmentService.call();
 
+
+      // SQL Query to insert documents (resume and cover letter) associated with the job application
+      // For cover letter
+      // INSERT INTO documents (docType, docBody, jobApplicationId)
+      // VALUES ('Cover Letter', coverLetterContent, jobAppId);
       const coverLetterAttachmentService = new AttachDocumentToJobApplicationService(
         jobAppId,
         'Cover Letter',
