@@ -27,7 +27,7 @@ jobs:
           MYSQL_USER: test_user
           MYSQL_PASSWORD: test_password
           MYSQL_DATABASE: test_db
-          CORS_ORIGIN: http://localhost:3000,https://hirewire-app-8efe6492bdf7.herokuapp.com
+          CORS_ORIGIN: "http://localhost:3000,http://example.com"
         ports:
           - 3306:3306
         options: >-
