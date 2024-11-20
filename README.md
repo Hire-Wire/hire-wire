@@ -1,65 +1,103 @@
-# Hire-wire
+# Hire-Wire
 
-**Hire-wire** is a web application designed to help job seekers generate personalized resumes and cover letters tailored to specific job postings using an LLM (Large Language Model). This project uses React for the frontend, Node.js with Express for the backend, and MySQL for data storage, hosted on Google Cloud.
+This tool that generates resumes and cover letters tailored for specific job postings.
+The target audience is anyone who is preparing job applications.
+Users will be able to register and log in with a username and password,
+and create a profile that includes personal information, employment experience, and education experience.
 
-## Table of Contents
-- [Features](#features)
-- [Technologies Used](#technologies-used)
-- [Installation](#installation)
-- [Running the Application](#running-the-application)
-- [API Documentation](#api-documentation)
-- [Environment Variables](#environment-variables)
-- [Contributing](#contributing)
-- [License](#license)
+# Developer Requirements
 
-## Features
+## Tech Stack
+- **Frontend**: React.js
+- **Backend**: Node.js with Express
+- **Database**: MySQL
+- **AI Integration**: OpenAI GPT API
 
-- User registration and login with secure password management.
-- User profile management (personal information, education, and work experience).
-- Job posting input for tailored resume and cover letter generation.
-- Integration with OpenAI's GPT model for generating resumes and cover letters.
-- Downloadable resume and cover letter in PDF format.
-- User-friendly interface with mobile and desktop support.
-- Google Cloud-hosted backend and database.
+## System Requirements
+- **Operating System**:
+    - Windows 10 or later / macOS 11 (Big Sur) or later / Ubuntu 20.04 or later
+- **Network**:
+    - Stable internet connection for dependency installation and API calls.
 
-### Frontend:
-- **React**: For building the user interface.
-- **Axios**: For making HTTP requests to the backend API.
-- **React Router**: For navigation between different pages.
-- **Figma**: Used for prototyping and design.
+## Environment Requirements
 
-### Backend:
-- **Node.js**: For server-side JavaScript execution.
-- **Express**: For handling API requests.
-- **OpenAI GPT**: LLM used to generate resumes and cover letters.
-- **MySQL**: For storing user profiles and job postings.
-- **Google Cloud SQL**: For hosting the database.
-- **JSON Web Tokens (JWT)**: For user authentication.
+### NodeJS
+- Compatible with Node.js **v18.0.0 or later**.
+- [Download Node.js](https://nodejs.org/).
+### React
+- React **v18.3.1 or later**.
+### npm
+- npm **v8.0.0 or later**.
+### MySQL
+- MySQL **v8.0 or later**.
 
-### Tools:
-- **GitHub Actions**: For continuous integration and deployment (CI/CD).
-- **Swagger**: For documenting and testing the backend API.
-- **Prettier/ESLint**: For code formatting and linting.
+## Environment Variables
 
-## Installation
+### Frontend `.env`
 
-### Prerequisites:
-Make sure you have the following installed on your machine:
-- **Node.js** (v14 or higher)
-- **MySQL** (local or hosted)
-- **Git** (for version control)
+Create a `.env` file in the root of your frontend directory and include the following:
+```env
+# Sample .env for frontend
+REACT_APP_BASE_URL=http://localhost:8000/api/v1/
+```
 
-**How can this be tested?**
+### Backend `.env`
 
-   1. Clone this repository:
-     ```bash```
-     git clone https://github.com/your-username/hire-wire.git
-  2. Navigate to the project directory 
-      ```cd hire-wire```
-  3. Install dependencies
-      ```npm install```
-  4. run ```npm start```
-  5. Go to your web browser and enter ```http://localhost:8000/```
+Create a `.env` file in the root of your backend directory and include the following:
+```env
+# Sample .env for backend
 
-**Highlight how this PR can be tested**
--  run ```npm test```
+# Database Configuration
+MYSQLUSERNAME=
+MYSQLPASSWORD=
+MYSQLDATABASE=
+MYSQLHOST=
+MYSQLPORT=
+
+# Test Database Configuration
+DB_NAME_TEST=
+DB_USER_TEST=
+DB_PASSWORD_TEST=
+DB_HOST_TEST=
+DB_DIALECT=mysql
+
+# JWT Configuration
+JWT_SECRET=your_jwt_secret_key
+
+# CORS Configuration
+CORS_ORIGIN=http://localhost:3000
+
+# OpenAI API Key
+OPENAI_API_KEY=your_api_key
+
+# Node Environment
+NODE_ENV=test
+```
+
+# Setup
+1. Verify that your development environment meets application requirements.
+2. Verify that your frontend and backend `.env` match the samples provided, and contain valid details specific to your development environment.
+3. Create a database in MySQL with a name matching the `MYSQLDATABASE` in the `.env` file.
+4. Ensure MySQL is running and accessible on `MYSQLHOST` and `MYSQLPORT` as specified in `.env`.
+5. Execute `npm install` in the terminal of your frontend and backend to install required dependencies.
+6. If running tests, ensure that `NODE_ENV=test` in your backend environment. Otherwise, remove this for development.
+7. Run migration scripts by executing `npx sequelize-cli db:seed:undo:all --config src/config/config-wrapper.cjs` in your backend terminal.
+8. Verify that migration scripts successfully initialize your database in MySQL.
+9. Execute `npm start` in the terminal of frontend and backend environment to start the application.
+
+## Available Scripts
+
+### `npm install`
+Installs package dependencies, which are specified by in the `package.json`.
+
+### `npm start`
+
+Runs the app in the development mode.
+Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+
+The page will reload when you make changes.\
+You may also see any lint errors in the console.
+
+### `npm test`
+
+Executes the test suite.
